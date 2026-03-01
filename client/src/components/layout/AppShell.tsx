@@ -22,9 +22,8 @@ function AppShell() {
       {/* Main Content Area */}
       <div
         className={cn(
-          'transition-all duration-200',
-          'md:ml-60',
-          sidebarCollapsed && 'md:ml-14',
+          'transition-[margin] duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]',
+          sidebarCollapsed ? 'md:ml-[52px]' : 'md:ml-[240px]',
         )}
       >
         <Header
@@ -32,7 +31,7 @@ function AppShell() {
           onMobileMenuToggle={() => setMobileOpen(true)}
         />
 
-        <main className="px-4 py-3 md:px-6 md:py-4">
+        <main>
           <Outlet />
         </main>
       </div>
