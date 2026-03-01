@@ -25,12 +25,12 @@ function EmptyState({
         className,
       )}
     >
-      <div className="mb-4 text-text-secondary">
+      <div className="mb-4 text-text-tertiary">
         {icon || <Inbox className="h-12 w-12 mx-auto opacity-40" />}
       </div>
-      <h3 className="text-lg font-semibold text-text-primary mb-1">{title}</h3>
+      <h3 className="text-sm font-semibold text-text-primary mb-1">{title}</h3>
       {description && (
-        <p className="text-sm text-text-secondary max-w-sm mb-6">
+        <p className="text-xs text-text-secondary max-w-sm mb-6">
           {description}
         </p>
       )}

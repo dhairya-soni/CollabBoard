@@ -6,7 +6,7 @@ function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'rounded-lg bg-surface-light animate-skeleton',
+        'rounded-md bg-surface-hover animate-skeleton',
         className,
       )}
       {...props}

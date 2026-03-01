@@ -61,33 +61,39 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Logo / Brand */}
       <div
         className={cn(
-          'flex items-center h-14 px-4 border-b border-border shrink-0',
+          'flex items-center h-16 px-4 border-b border-border shrink-0',
           collapsed ? 'justify-center' : 'gap-3',
         )}
       >
-        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-          <span className="text-white font-semibold text-sm">CB</span>
+        <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center shrink-0">
+          <span className="text-white font-semibold text-xs">CB</span>
         </div>
         {!collapsed && (
-          <span className="text-base font-semibold text-text-primary truncate">
+          <span className="text-sm font-semibold text-text-primary truncate">
             CollabBoard
           </span>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+        <p className={cn(
+          'text-xs font-medium text-text-tertiary uppercase tracking-wider mb-2',
+          collapsed ? 'text-center' : 'px-3',
+        )}>
+          {collapsed ? '...' : 'Navigation'}
+        </p>
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                collapsed && 'justify-center px-2',
+                'flex items-center gap-3 h-9 rounded-md px-3 text-sm font-medium transition-colors',
+                collapsed && 'justify-center px-0 w-9 mx-auto',
                 isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-light',
+                  ? 'bg-surface-hover text-text-primary border-l-2 border-primary'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover',
               )
             }
           >
@@ -98,14 +104,14 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       </nav>
 
       {/* Bottom section */}
-      <div className="border-t border-border px-3 py-3 space-y-2 shrink-0">
+      <div className="border-t border-border px-2 py-3 space-y-1 shrink-0">
         <ThemeToggle collapsed={collapsed} />
 
         {/* User info */}
         <div
           className={cn(
-            'flex items-center gap-3 rounded-lg p-2',
-            collapsed && 'justify-center',
+            'flex items-center gap-3 rounded-md px-3 py-2',
+            collapsed && 'justify-center px-0',
           )}
         >
           <Avatar name="John Doe" size="sm" />
@@ -114,7 +120,7 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               <p className="text-sm font-medium text-text-primary truncate">
                 John Doe
               </p>
-              <p className="text-xs text-text-secondary truncate">
+              <p className="text-xs text-text-tertiary truncate">
                 john@example.com
               </p>
             </div>
@@ -124,7 +130,7 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {/* Collapse toggle (desktop only) */}
         <button
           onClick={toggleCollapse}
-          className="hidden md:flex items-center gap-2 rounded-lg p-2 w-full text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors cursor-pointer justify-center"
+          className="hidden md:flex items-center gap-2 h-9 rounded-md w-full text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer justify-center"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? (
@@ -167,7 +173,7 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {/* Close button */}
         <button
           onClick={onMobileClose}
-          className="absolute top-3 right-3 p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors cursor-pointer"
+          className="absolute top-3 right-3 p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           aria-label="Close sidebar"
         >
           <X className="h-4 w-4" />

@@ -27,7 +27,7 @@ function DropdownMenu({ trigger, items, align = 'end' }: DropdownMenuProps) {
           align={align}
           sideOffset={6}
           className={cn(
-            'z-50 min-w-[180px] rounded-xl bg-surface border border-border shadow-xl shadow-black/30 p-1.5',
+            'z-50 min-w-[180px] rounded-lg bg-surface border border-border p-1',
             'animate-in fade-in-0 zoom-in-95',
           )}
         >
@@ -36,10 +36,10 @@ function DropdownMenu({ trigger, items, align = 'end' }: DropdownMenuProps) {
               key={index}
               onClick={item.onClick}
               className={cn(
-                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm cursor-pointer outline-none transition-colors',
+                'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm cursor-pointer outline-none transition-colors',
                 item.variant === 'danger'
                   ? 'text-danger hover:bg-danger/10 focus:bg-danger/10'
-                  : 'text-text-primary hover:bg-surface-light focus:bg-surface-light',
+                  : 'text-text-primary hover:bg-surface-hover focus:bg-surface-hover',
               )}
             >
               {item.icon && <span className="h-4 w-4 shrink-0">{item.icon}</span>}
