@@ -40,6 +40,10 @@ coverage/
 playwright-report/
 test-results/
 
+# Prisma SQLite
+*.db
+*.db-journal
+
 # Misc
 *.local
 .cache/

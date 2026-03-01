@@ -1,0 +1,31 @@
+# CollabBoard — Docker Compose (optional)
+# Start PostgreSQL for production-like local development.
+# Default dev uses SQLite (no Docker needed).
+#
+# Usage:
+#   docker compose up -d
+#   Then update server/.env:
+#     DATABASE_URL="postgresql://postgres:postgres@localhost:5432/collabboard?schema=public"
+#   And change prisma/schema.prisma provider to "postgresql"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: collabboard
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    restart: unless-stopped
+
+volumes:
+  pgdata:
