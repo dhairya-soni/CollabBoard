@@ -23,8 +23,8 @@ function AppShell() {
       <div
         className={cn(
           'transition-all duration-200',
-          'md:ml-64',
-          sidebarCollapsed && 'md:ml-16',
+          'md:ml-60',
+          sidebarCollapsed && 'md:ml-14',
         )}
       >
         <Header

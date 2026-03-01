@@ -25,14 +25,14 @@ function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle }: Hea
   return (
     <header
       className={cn(
-        'sticky top-0 z-20 h-16 bg-background border-b border-border flex items-center justify-between px-4 md:px-6',
+        'sticky top-0 z-20 h-12 bg-background border-b border-border flex items-center justify-between px-4 md:px-6',
       )}
     >
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMobileMenuToggle}
-          className="md:hidden w-8 h-8 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+          className="md:hidden w-8 h-8 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           aria-label="Open sidebar"
         >
           <Menu className="h-4 w-4" />
@@ -60,7 +60,7 @@ function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle }: Hea
       <div className="flex items-center gap-2">
         {/* Search trigger — looks like an input */}
         <button
-          className="hidden md:flex items-center gap-2 w-56 h-8 bg-surface border border-border rounded-md px-3 text-sm text-text-tertiary hover:border-border/80 transition-colors cursor-pointer"
+          className="hidden md:flex items-center gap-2 w-52 h-7 bg-input border border-border-strong rounded px-3 text-sm text-text-tertiary hover:border-border/80 transition-colors cursor-pointer"
           aria-label="Search"
         >
           <Search className="h-3.5 w-3.5" />
@@ -71,13 +71,13 @@ function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle }: Hea
         </button>
         {/* Mobile search icon */}
         <button
-          className="md:hidden w-8 h-8 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+          className="md:hidden w-7 h-7 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           aria-label="Search"
         >
           <Search className="h-4 w-4" />
         </button>
         <button
-          className="w-8 h-8 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors relative cursor-pointer"
+          className="w-7 h-7 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors relative cursor-pointer"
           aria-label="Notifications"
         >
           <Bell className="h-4 w-4" />

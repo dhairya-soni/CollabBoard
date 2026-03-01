@@ -12,18 +12,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, leftIcon, className, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-text-secondary"
+            className="text-2xs font-medium text-text-tertiary uppercase tracking-wider"
           >
             {label}
           </label>
         )}
         <div className="relative">
           {leftIcon && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary">
               {leftIcon}
             </span>
           )}
@@ -31,7 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full h-8 bg-background border border-border rounded-md px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary transition-colors',
+              'w-full h-7 bg-input border border-border-strong rounded px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-colors',
               leftIcon && 'pl-9',
               error && 'border-danger focus:ring-danger/20 focus:border-danger',
               className,
@@ -57,11 +57,11 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, className, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-text-secondary"
+            className="text-2xs font-medium text-text-tertiary uppercase tracking-wider"
           >
             {label}
           </label>
@@ -70,7 +70,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full bg-background border border-border rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary transition-colors resize-y min-h-20',
+            'w-full bg-input border border-border-strong rounded px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-colors resize-y min-h-16',
             error && 'border-danger focus:ring-danger/20 focus:border-danger',
             className,
           )}

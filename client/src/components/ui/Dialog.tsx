@@ -30,7 +30,7 @@ function Dialog({
         <DialogPrimitive.Content
           className={cn(
             'fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2',
-            'rounded-lg bg-surface border border-border p-6',
+            'rounded-md bg-surface border border-border-strong p-6 shadow-[0_4px_16px_rgba(0,0,0,0.3)]',
             'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
             'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
             className,

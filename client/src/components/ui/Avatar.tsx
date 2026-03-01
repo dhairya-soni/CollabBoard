@@ -29,7 +29,7 @@ function Avatar({ src, name, size = 'md', className, ...props }: AvatarProps) {
   return (
     <div
       className={cn(
-        'relative inline-flex items-center justify-center rounded-full bg-surface-hover text-text-secondary font-medium shrink-0',
+        'relative inline-flex items-center justify-center rounded-full bg-surface-hover text-text-tertiary font-medium shrink-0',
         sizeStyles[size],
         className,
       )}

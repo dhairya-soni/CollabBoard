@@ -45,8 +45,8 @@ const itemVariants = {
 /* ── Section Wrapper ── */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <motion.section variants={itemVariants} className="space-y-3">
-      <h2 className="text-xs font-medium text-text-tertiary uppercase tracking-wider">
+    <motion.section variants={itemVariants} className="space-y-2.5">
+      <h2 className="text-2xs font-medium text-text-tertiary uppercase tracking-wider">
         {title}
       </h2>
       {children}
@@ -61,7 +61,7 @@ function DesignSystemPage() {
 
   return (
     <motion.div
-      className="max-w-5xl mx-auto space-y-10"
+      className="max-w-5xl mx-auto space-y-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -69,7 +69,7 @@ function DesignSystemPage() {
       {/* Page Header */}
       <motion.div variants={itemVariants}>
         <h1 className="text-xl font-semibold text-text-primary">Design System</h1>
-        <p className="text-xs text-text-secondary mt-1">
+        <p className="text-xs text-text-tertiary mt-1">
           CollabBoard component library — all tokens and patterns in one place.
         </p>
       </motion.div>
@@ -90,13 +90,17 @@ function DesignSystemPage() {
             { name: 'Text Primary', color: 'bg-text-primary' },
             { name: 'Text Secondary', color: 'bg-text-secondary' },
             { name: 'Text Tertiary', color: 'bg-text-tertiary' },
+            { name: 'Text Muted', color: 'bg-text-muted' },
+            { name: 'Icon', color: 'bg-icon' },
             { name: 'Border', color: 'bg-border', border: true },
+            { name: 'Border Strong', color: 'bg-border-strong', border: true },
+            { name: 'Input', color: 'bg-input', border: true },
           ].map((c) => (
             <div key={c.name} className="flex flex-col items-center gap-1.5">
               <div
-                className={`h-10 w-full rounded-md ${c.color} ${c.border ? 'border border-border' : ''}`}
+                className={`h-10 w-full rounded ${c.color} ${c.border ? 'border border-border-strong' : ''}`}
               />
-              <span className="text-xs text-text-tertiary">{c.name}</span>
+              <span className="text-2xs text-text-muted">{c.name}</span>
             </div>
           ))}
         </div>
@@ -105,25 +109,25 @@ function DesignSystemPage() {
       {/* ── Typography ── */}
       <Section title="Typography">
         <Card>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2.5">
             <div>
-              <span className="text-xs text-text-tertiary font-mono">text-xl font-semibold</span>
+              <span className="text-2xs text-text-muted font-mono">text-xl font-semibold</span>
               <p className="text-xl font-semibold text-text-primary">Page Title — Inter Semibold</p>
             </div>
             <div>
-              <span className="text-xs text-text-tertiary font-mono">text-xs uppercase tracking-wider</span>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wider">Section Label</p>
+              <span className="text-2xs text-text-muted font-mono">text-2xs uppercase tracking-wider</span>
+              <p className="text-2xs font-medium text-text-tertiary uppercase tracking-wider">Section Label — 11px</p>
             </div>
             <div>
-              <span className="text-xs text-text-tertiary font-mono">text-sm text-text-primary</span>
+              <span className="text-2xs text-text-muted font-mono">text-sm text-text-primary</span>
               <p className="text-sm text-text-primary">Body text — The quick brown fox jumps over the lazy dog.</p>
             </div>
             <div>
-              <span className="text-xs text-text-tertiary font-mono">text-xs text-text-secondary</span>
+              <span className="text-2xs text-text-muted font-mono">text-xs text-text-secondary</span>
               <p className="text-xs text-text-secondary">Small text — Metadata, timestamps, and helper labels.</p>
             </div>
             <div>
-              <span className="text-xs text-text-tertiary font-mono">font-mono</span>
+              <span className="text-2xs text-text-muted font-mono">font-mono</span>
               <p className="text-sm font-mono text-text-secondary">TASK-2847 • 2024-01-15 14:30</p>
             </div>
           </CardContent>
@@ -133,10 +137,10 @@ function DesignSystemPage() {
       {/* ── Buttons ── */}
       <Section title="Buttons">
         <Card>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-4">
             {/* Variants */}
             <div>
-              <p className="text-xs text-text-tertiary mb-2">Variants</p>
+              <p className="text-2xs text-text-tertiary mb-2">Variants</p>
               <div className="flex flex-wrap gap-2">
                 <Button variant="primary">Primary</Button>
                 <Button variant="secondary">Secondary</Button>
@@ -147,7 +151,7 @@ function DesignSystemPage() {
 
             {/* Sizes */}
             <div>
-              <p className="text-xs text-text-tertiary mb-2">Sizes</p>
+              <p className="text-2xs text-text-tertiary mb-2">Sizes</p>
               <div className="flex flex-wrap items-center gap-2">
                 <Button size="sm">Small</Button>
                 <Button size="md">Medium</Button>
@@ -157,7 +161,7 @@ function DesignSystemPage() {
 
             {/* With Icons */}
             <div>
-              <p className="text-xs text-text-tertiary mb-2">With Icons</p>
+              <p className="text-2xs text-text-tertiary mb-2">With Icons</p>
               <div className="flex flex-wrap gap-2">
                 <Button leftIcon={<Plus className="h-3.5 w-3.5" />}>Create Task</Button>
                 <Button variant="secondary" leftIcon={<Search className="h-3.5 w-3.5" />}>
@@ -171,7 +175,7 @@ function DesignSystemPage() {
 
             {/* States */}
             <div>
-              <p className="text-xs text-text-tertiary mb-2">States</p>
+              <p className="text-2xs text-text-tertiary mb-2">States</p>
               <div className="flex flex-wrap gap-2">
                 <Button isLoading>Loading</Button>
                 <Button disabled>Disabled</Button>
@@ -410,7 +414,7 @@ function DesignSystemPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: i * 0.08 }}
-                  className="bg-surface-hover rounded-md px-3 py-1.5 text-xs font-medium text-text-secondary border border-border"
+                  className="bg-surface-hover rounded px-3 py-1.5 text-xs font-medium text-text-secondary border border-border-strong"
                 >
                   {label}
                 </motion.div>

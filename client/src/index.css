@@ -6,15 +6,19 @@
    ============================================ */
 
 @theme {
-  /* ── Core Palette (Deep slate, not blue-tinted) ── */
-  --color-background: #0B0F19;
-  --color-surface: #151921;
-  --color-surface-hover: #1E2330;
-  --color-border: #2A2F3D;
+  /* ── Core Palette (Linear exact — from Figma inspect) ── */
+  --color-background: #181922;
+  --color-surface: #1D1E2B;
+  --color-surface-hover: #292A35;
+  --color-input: #151621;
+
+  /* ── Borders ── */
+  --color-border: #2C2D3C;
+  --color-border-strong: #313248;
 
   /* ── Brand ── */
-  --color-primary: #5E6AD2;
-  --color-primary-hover: #7B82E1;
+  --color-primary: #5C6BF1;
+  --color-primary-hover: #6E79F7;
   --color-secondary: #8B5CF6;
 
   /* ── Semantic ── */
@@ -22,23 +26,33 @@
   --color-warning: #FF9800;
   --color-danger: #F44336;
 
-  /* ── Text (3-tier hierarchy) ── */
-  --color-text-primary: #F7F8F8;
-  --color-text-secondary: #8A8F98;
-  --color-text-tertiary: #5C6170;
+  /* ── Text (4-tier hierarchy — Linear exact) ── */
+  --color-text-primary: #EEEFFC;
+  --color-text-secondary: #D2D3E0;
+  --color-text-tertiary: #858699;
+  --color-text-muted: #4C4F6B;
 
-  /* ── Light mode overrides ── */
+  /* ── Icons ── */
+  --color-icon: #BEC2C8;
+
+  /* ── Light mode ref tokens ── */
   --color-background-light: #FAFAFA;
   --color-surface-light-theme: #FFFFFF;
   --color-surface-hover-light: #F4F4F5;
   --color-border-light: #E4E4E7;
+  --color-border-strong-light: #D4D4D8;
   --color-text-primary-light: #09090B;
-  --color-text-secondary-light: #71717A;
-  --color-text-tertiary-light: #A1A1AA;
+  --color-text-secondary-light: #52525B;
+  --color-text-tertiary-light: #71717A;
+  --color-text-muted-light: #A1A1AA;
 
   /* ── Typography ── */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── Custom font sizes ── */
+  --font-size-2xs: 11px;
+  --font-size-2xs--line-height: 14px;
 
   /* ── Animations ── */
   --animate-skeleton: skeleton 1.5s ease-in-out infinite;
@@ -56,10 +70,14 @@
   --color-background: #FAFAFA;
   --color-surface: #FFFFFF;
   --color-surface-hover: #F4F4F5;
+  --color-input: #FFFFFF;
   --color-border: #E4E4E7;
+  --color-border-strong: #D4D4D8;
   --color-text-primary: #09090B;
-  --color-text-secondary: #71717A;
-  --color-text-tertiary: #A1A1AA;
+  --color-text-secondary: #52525B;
+  --color-text-tertiary: #71717A;
+  --color-text-muted: #A1A1AA;
+  --color-icon: #71717A;
 }
 
 /* ============================================
@@ -92,8 +110,8 @@ body {
   background: var(--color-text-tertiary);
 }
 
-/* Focus visible ring — subtle, not distracting */
+/* Focus visible ring — subtle, per-component handles its own ring.
+   This is only a fallback for interactive elements without custom focus styles. */
 *:focus-visible {
-  outline: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
-  outline-offset: 2px;
+  outline: none;
 }
