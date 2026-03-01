@@ -78,10 +78,10 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
         <p className={cn(
-          'text-xs font-medium text-text-tertiary uppercase tracking-wider mb-2',
+          'text-xs font-medium text-text-secondary uppercase tracking-wider mb-2',
           collapsed ? 'text-center' : 'px-3',
         )}>
-          {collapsed ? '...' : 'Navigation'}
+          {collapsed ? '·' : 'Navigation'}
         </p>
         {navItems.map((item) => (
           <NavLink

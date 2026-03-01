@@ -39,8 +39,8 @@ function App() {
 function PlaceholderPage({ title }: { title: string }) {
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-text-primary">{title}</h1>
-      <p className="text-sm text-text-secondary">
+      <h1 className="text-xl font-semibold text-text-primary">{title}</h1>
+      <p className="text-xs text-text-secondary">
         This page will be built in Phase 2.
       </p>
     </div>

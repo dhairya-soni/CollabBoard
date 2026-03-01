@@ -89,6 +89,7 @@ function DesignSystemPage() {
             { name: 'Danger', color: 'bg-danger' },
             { name: 'Text Primary', color: 'bg-text-primary' },
             { name: 'Text Secondary', color: 'bg-text-secondary' },
+            { name: 'Text Tertiary', color: 'bg-text-tertiary' },
             { name: 'Border', color: 'bg-border', border: true },
           ].map((c) => (
             <div key={c.name} className="flex flex-col items-center gap-1.5">
