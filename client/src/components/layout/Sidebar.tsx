@@ -61,12 +61,12 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Logo / Brand */}
       <div
         className={cn(
-          'flex items-center h-16 px-4 border-b border-border shrink-0',
+          'flex items-center h-12 px-4 border-b border-border shrink-0',
           collapsed ? 'justify-center' : 'gap-3',
         )}
       >
-        <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center shrink-0">
-          <span className="text-white font-semibold text-xs">CB</span>
+        <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center shrink-0">
+          <span className="text-white font-semibold text-2xs">CB</span>
         </div>
         {!collapsed && (
           <span className="text-sm font-semibold text-text-primary truncate">
@@ -78,7 +78,7 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
         <p className={cn(
-          'text-xs font-medium text-text-secondary uppercase tracking-wider mb-2',
+          'text-2xs font-medium text-text-tertiary uppercase tracking-wider mb-2',
           collapsed ? 'text-center' : 'px-3',
         )}>
           {collapsed ? '·' : 'Navigation'}
@@ -89,10 +89,10 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
             to={item.to}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 h-9 rounded-md px-3 text-sm font-medium transition-colors',
-                collapsed && 'justify-center px-0 w-9 mx-auto',
+                'flex items-center gap-3 h-8 rounded-md px-3 text-sm font-medium transition-colors',
+                collapsed && 'justify-center px-0 w-8 mx-auto',
                 isActive
-                  ? 'bg-surface-hover text-text-primary border-l-2 border-primary'
+                  ? 'bg-surface text-text-primary'
                   : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover',
               )
             }
@@ -130,7 +130,7 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {/* Collapse toggle (desktop only) */}
         <button
           onClick={toggleCollapse}
-          className="hidden md:flex items-center gap-2 h-9 rounded-md w-full text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer justify-center"
+          className="hidden md:flex items-center gap-2 h-8 rounded w-full text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer justify-center"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? (
@@ -148,8 +148,8 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'hidden md:flex flex-col fixed left-0 top-0 h-screen bg-surface border-r border-border transition-all duration-200 z-30',
-          collapsed ? 'w-16' : 'w-64',
+          'hidden md:flex flex-col fixed left-0 top-0 h-screen bg-background border-r border-border transition-all duration-200 z-30',
+          collapsed ? 'w-14' : 'w-60',
         )}
       >
         {sidebarContent}
@@ -166,14 +166,14 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Mobile Drawer */}
       <aside
         className={cn(
-          'md:hidden fixed left-0 top-0 h-screen w-64 bg-surface border-r border-border z-50 transition-transform duration-200',
+          'md:hidden fixed left-0 top-0 h-screen w-60 bg-background border-r border-border z-50 transition-transform duration-200',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         {/* Close button */}
         <button
           onClick={onMobileClose}
-          className="absolute top-3 right-3 p-1.5 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+          className="absolute top-3 right-3 p-1.5 rounded text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           aria-label="Close sidebar"
         >
           <X className="h-4 w-4" />

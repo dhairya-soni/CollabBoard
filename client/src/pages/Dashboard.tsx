@@ -13,7 +13,7 @@ function DashboardPage() {
     >
       <div>
         <h1 className="text-xl font-semibold text-text-primary">Dashboard</h1>
-        <p className="text-xs text-text-secondary mt-1">
+        <p className="text-xs text-text-tertiary mt-1">
           Welcome back! Here&apos;s what&apos;s happening across your workspaces.
         </p>
       </div>
@@ -28,8 +28,8 @@ function DashboardPage() {
           <Card key={stat.label}>
             <CardContent>
               <div className="flex items-center gap-1.5 mb-1">
-                <stat.icon className="h-3.5 w-3.5 text-text-tertiary" />
-                <p className="text-xs font-medium text-text-tertiary uppercase tracking-wider">{stat.label}</p>
+                <stat.icon className="h-3.5 w-3.5 text-icon" />
+                <p className="text-2xs font-medium text-text-tertiary uppercase tracking-wider">{stat.label}</p>
               </div>
               <p className="text-2xl font-semibold text-text-primary">
                 {stat.value}
