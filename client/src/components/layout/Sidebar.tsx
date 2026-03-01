@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,21 +17,21 @@ import {
   ChevronsLeft,
   ChevronsRight,
   X,
+  LogOut,
+  FolderKanban,
 } from 'lucide-react';
+import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useProjects } from '@/hooks/useProjects';
+import { useWorkspaceStore } from '@/stores/workspace';
+import { useAuthStore } from '@/stores/auth';
 
 /* ── Navigation Items (Linear-style) ── */
 const mainNavItems = [
-  { label: 'Inbox', icon: Inbox, to: '/inbox', count: 3 },
+  { label: 'Inbox', icon: Inbox, to: '/inbox', count: undefined },
   { label: 'My Issues', icon: CircleUser, to: '/', count: undefined },
+  { label: 'Projects', icon: FolderKanban, to: '/projects', count: undefined },
   { label: 'Views', icon: Eye, to: '/views', count: undefined },
   { label: 'Roadmaps', icon: Map, to: '/roadmaps', count: undefined },
-];
-
-/* ── Team Projects ── */
-const teamProjects = [
-  { label: 'Issues', to: '/' },
-  { label: 'Active', to: '/active' },
-  { label: 'Backlog', to: '/backlog' },
 ];
 
 /* ── Sidebar State Persistence ── */
@@ -55,6 +55,26 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(getPersistedCollapsed);
   const [teamExpanded, setTeamExpanded] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const logout = useAuthStore((s) => s.logout);
+  const user = useAuthStore((s) => s.user);
+  const currentWorkspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
+  const setCurrentWorkspace = useWorkspaceStore((s) => s.setCurrentWorkspace);
+
+  // Fetch workspaces & auto-select first one
+  const { data: workspaces } = useWorkspaces();
+  const firstWs = workspaces?.[0];
+  useEffect(() => {
+    if (firstWs && !currentWorkspaceId) {
+      setCurrentWorkspace(firstWs.id);
+    }
+  }, [firstWs, currentWorkspaceId, setCurrentWorkspace]);
+
+  const activeWorkspace = workspaces?.find((w) => w.id === currentWorkspaceId) ?? workspaces?.[0];
+
+  // Fetch projects for the active workspace
+  const { data: projects } = useProjects(activeWorkspace?.id ?? null);
 
   const toggleCollapse = useCallback(() => {
     setCollapsed((prev) => {
@@ -63,6 +83,11 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       return next;
     });
   }, []);
+
+  function handleLogout() {
+    logout();
+    navigate('/login');
+  }
 
   // Close mobile sidebar on route change
   useEffect(() => {
@@ -90,7 +115,7 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               transition={{ duration: 0.15 }}
               className="text-[13px] font-semibold text-text-primary truncate"
             >
-              CollabBoard
+              {activeWorkspace?.name ?? 'CollabBoard'}
             </motion.span>
           )}
         </div>
@@ -174,18 +199,22 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                   {/* Team row */}
                   <div className="flex items-center gap-2 px-2 py-1.5 mt-1 rounded hover:bg-surface-hover/50 transition-colors cursor-pointer group">
                     <div className="h-[18px] w-[18px] rounded-[3px] bg-primary/15 flex items-center justify-center border border-primary/20">
-                      <span className="text-[8px] font-bold text-primary leading-none">CB</span>
+                      <span className="text-[8px] font-bold text-primary leading-none">
+                        {(activeWorkspace?.name ?? 'CB').substring(0, 2).toUpperCase()}
+                      </span>
                     </div>
-                    <span className="text-[13px] font-medium text-text-secondary flex-1">CollabBoard</span>
+                    <span className="text-[13px] font-medium text-text-secondary flex-1">
+                      {activeWorkspace?.name ?? 'Workspace'}
+                    </span>
                     <ChevronRight className="h-3 w-3 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
 
-                  {/* Project links */}
+                  {/* Project links — dynamic from API */}
                   <div className="ml-2 space-y-px mt-0.5">
-                    {teamProjects.map((proj) => (
+                    {(projects ?? []).map((proj) => (
                       <NavLink
-                        key={proj.label}
-                        to={proj.to}
+                        key={proj.id}
+                        to={`/projects/${proj.id}`}
                         className={({ isActive }) =>
                           cn(
                             'flex items-center gap-2 h-[28px] rounded px-2 text-[13px] transition-all duration-150',
@@ -196,9 +225,15 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                         }
                       >
                         <Hash className="h-3.5 w-3.5" />
-                        <span>{proj.label}</span>
+                        <span className="truncate flex-1">{proj.name}</span>
+                        <span className="text-[11px] text-text-muted tabular-nums">
+                          {proj._count.tasks}
+                        </span>
                       </NavLink>
                     ))}
+                    {projects && projects.length === 0 && (
+                      <p className="px-2 py-1 text-[12px] text-text-muted">No projects yet</p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -226,6 +261,30 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           <Settings className="h-[15px] w-[15px] shrink-0" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
+
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className={cn(
+            'flex items-center gap-2.5 h-[28px] rounded w-full text-text-muted hover:text-red-400 hover:bg-surface-hover/50 transition-all duration-150 cursor-pointer',
+            collapsed ? 'justify-center px-0' : 'px-2',
+          )}
+        >
+          <LogOut className="h-[15px] w-[15px] shrink-0" />
+          {!collapsed && <span className="text-[13px]">Logout</span>}
+        </button>
+
+        {/* User info */}
+        {!collapsed && user && (
+          <div className="flex items-center gap-2 px-2 py-1.5 mt-0.5">
+            <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
+              <span className="text-[8px] font-bold text-primary">
+                {user.name.substring(0, 2).toUpperCase()}
+              </span>
+            </div>
+            <span className="text-[11px] text-text-muted truncate">{user.email}</span>
+          </div>
+        )}
 
         {/* Collapse toggle */}
         <button
