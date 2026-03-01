@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
@@ -14,23 +15,37 @@ import {
   ChevronRight,
   MoreHorizontal,
   Plus,
+  Loader2,
 } from 'lucide-react';
+import { useTasks, useCreateTask } from '@/hooks/useTasks';
+import { useProjects, useProject } from '@/hooks/useProjects';
+import { useWorkspaceStore } from '@/stores/workspace';
+import type { Task, TaskStatus, TaskPriority } from '@/types/api';
+import { toast } from 'sonner';
 
-/* ── Types ── */
-type IssueStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled';
-type IssuePriority = 'urgent' | 'high' | 'medium' | 'low' | 'none';
+/* ── Local display types ── */
+type DisplayStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled';
+type DisplayPriority = 'urgent' | 'high' | 'medium' | 'low' | 'none';
 
-interface Issue {
-  id: string;
-  title: string;
-  status: IssueStatus;
-  priority: IssuePriority;
-  assignee?: { name: string; color: string };
-  label?: { text: string; color: string };
-}
+/* ── Map API enums to display keys ── */
+const statusMap: Record<TaskStatus, DisplayStatus> = {
+  BACKLOG: 'backlog',
+  TODO: 'todo',
+  IN_PROGRESS: 'in-progress',
+  DONE: 'done',
+  CANCELLED: 'cancelled',
+};
+
+const priorityMap: Record<TaskPriority, DisplayPriority> = {
+  URGENT: 'urgent',
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low',
+  NONE: 'none',
+};
 
 /* ── Status config ── */
-const statusConfig: Record<IssueStatus, { icon: React.ElementType; color: string; label: string }> = {
+const statusConfig: Record<DisplayStatus, { icon: React.ElementType; color: string; label: string }> = {
   backlog: { icon: CircleDashed, color: 'text-text-muted', label: 'Backlog' },
   todo: { icon: Circle, color: 'text-text-tertiary', label: 'Todo' },
   'in-progress': { icon: CircleDot, color: 'text-[#F5A623]', label: 'In Progress' },
@@ -39,7 +54,7 @@ const statusConfig: Record<IssueStatus, { icon: React.ElementType; color: string
 };
 
 /* ── Priority config ── */
-const priorityConfig: Record<IssuePriority, { icon: React.ElementType; color: string }> = {
+const priorityConfig: Record<DisplayPriority, { icon: React.ElementType; color: string }> = {
   urgent: { icon: AlertTriangle, color: 'text-[#F44336]' },
   high: { icon: SignalHigh, color: 'text-[#FB923C]' },
   medium: { icon: SignalMedium, color: 'text-[#F5A623]' },
@@ -47,39 +62,17 @@ const priorityConfig: Record<IssuePriority, { icon: React.ElementType; color: st
   none: { icon: SignalLow, color: 'text-text-muted' },
 };
 
-/* ── Mock data ── */
-const mockIssues: Issue[] = [
-  { id: 'CB-1', title: 'Welcome to CollabBoard 👋', status: 'todo', priority: 'medium', label: { text: 'Onboarding', color: '#5E6AD2' } },
-  { id: 'CB-4', title: 'Connect GitHub or GitLab', status: 'todo', priority: 'high', assignee: { name: 'DS', color: '#8B5CF6' } },
-  { id: 'CB-2', title: 'Try 3 ways to navigate: Command line, keyboard or mouse', status: 'todo', priority: 'low', label: { text: 'Guide', color: '#22C55E' } },
-  { id: 'CB-5', title: 'Customize settings', status: 'todo', priority: 'medium', assignee: { name: 'JD', color: '#3B82F6' } },
-  { id: 'CB-3', title: 'Connect to Slack', status: 'in-progress', priority: 'medium', label: { text: 'Integration', color: '#F59E0B' } },
-  { id: 'CB-8', title: 'ProTip: Mouse over this issue & press [Space]', status: 'in-progress', priority: 'low' },
-  { id: 'CB-6', title: 'Set up infinite canvas board', status: 'in-progress', priority: 'high', assignee: { name: 'AK', color: '#EC4899' }, label: { text: 'Feature', color: '#8B5CF6' } },
-  { id: 'CB-7', title: 'Implement real-time collaboration via WebSocket', status: 'backlog', priority: 'urgent', label: { text: 'Core', color: '#EF4444' } },
-  { id: 'CB-9', title: 'Add drag-and-drop task reordering', status: 'backlog', priority: 'high' },
-  { id: 'CB-10', title: 'Design system component audit', status: 'done', priority: 'medium', assignee: { name: 'DS', color: '#8B5CF6' }, label: { text: 'Design', color: '#5E6AD2' } },
-];
-
-/* ── Group issues by status ── */
-function groupByStatus(issues: Issue[]): Record<IssueStatus, Issue[]> {
-  const groups: Record<IssueStatus, Issue[]> = {
-    'backlog': [],
-    'todo': [],
-    'in-progress': [],
-    'done': [],
-    'cancelled': [],
-  };
-  for (const issue of issues) {
-    groups[issue.status].push(issue);
-  }
-  return groups;
+/* ── Derive a short identifier from task title position ── */
+function taskIdentifier(_task: Task, index: number): string {
+  return `CB-${index + 1}`;
 }
 
 /* ── Issue Row ── */
-function IssueRow({ issue, index }: { issue: Issue; index: number }) {
-  const status = statusConfig[issue.status];
-  const priority = priorityConfig[issue.priority];
+function IssueRow({ task, index }: { task: Task; index: number }) {
+  const displayStatus = statusMap[task.status];
+  const displayPriority = priorityMap[task.priority];
+  const status = statusConfig[displayStatus];
+  const priority = priorityConfig[displayPriority];
   const StatusIcon = status.icon;
   const PriorityIcon = priority.icon;
 
@@ -87,7 +80,7 @@ function IssueRow({ issue, index }: { issue: Issue; index: number }) {
     <motion.div
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15, delay: index * 0.03 }}
+      transition={{ duration: 0.15, delay: index * 0.02 }}
       className="group flex items-center gap-3 h-[36px] px-3 border-b border-border/60 hover:bg-surface-hover/40 transition-colors cursor-pointer"
     >
       {/* Priority */}
@@ -95,7 +88,7 @@ function IssueRow({ issue, index }: { issue: Issue; index: number }) {
 
       {/* Issue ID */}
       <span className="text-[12px] text-text-muted font-mono w-[44px] shrink-0 tabular-nums">
-        {issue.id}
+        {taskIdentifier(task, index)}
       </span>
 
       {/* Status icon */}
@@ -103,32 +96,24 @@ function IssueRow({ issue, index }: { issue: Issue; index: number }) {
 
       {/* Title */}
       <span className="text-[13px] text-text-primary truncate flex-1 font-normal">
-        {issue.title}
+        {task.title}
       </span>
 
-      {/* Label */}
-      {issue.label && (
-        <span
-          className="hidden sm:inline-flex items-center h-[18px] rounded-full px-2 text-[10px] font-medium border shrink-0"
-          style={{
-            color: issue.label.color,
-            borderColor: `${issue.label.color}25`,
-            backgroundColor: `${issue.label.color}10`,
-          }}
+      {/* Assignee avatar */}
+      {task.assignee && (
+        <div
+          className="h-[18px] w-[18px] rounded-full bg-primary/20 flex items-center justify-center text-[8px] font-bold text-primary shrink-0"
+          title={task.assignee.name}
         >
-          {issue.label.text}
-        </span>
+          {task.assignee.name.substring(0, 2).toUpperCase()}
+        </div>
       )}
 
-      {/* Assignee avatar */}
-      {issue.assignee && (
-        <div
-          className="h-[18px] w-[18px] rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0"
-          style={{ backgroundColor: issue.assignee.color }}
-          title={issue.assignee.name}
-        >
-          {issue.assignee.name}
-        </div>
+      {/* Comment count */}
+      {task._count.comments > 0 && (
+        <span className="text-[11px] text-text-muted tabular-nums">
+          💬 {task._count.comments}
+        </span>
       )}
 
       {/* More actions (visible on hover) */}
@@ -140,12 +125,20 @@ function IssueRow({ issue, index }: { issue: Issue; index: number }) {
 }
 
 /* ── Status Group ── */
-function StatusGroup({ status, issues }: { status: IssueStatus; issues: Issue[] }) {
+function StatusGroup({
+  status,
+  tasks,
+  globalOffset,
+}: {
+  status: DisplayStatus;
+  tasks: Task[];
+  globalOffset: number;
+}) {
   const [expanded, setExpanded] = useState(true);
   const config = statusConfig[status];
   const StatusIcon = config.icon;
 
-  if (issues.length === 0) return null;
+  if (tasks.length === 0) return null;
 
   return (
     <div>
@@ -162,15 +155,10 @@ function StatusGroup({ status, issues }: { status: IssueStatus; issues: Issue[] 
         </motion.div>
         <StatusIcon className={cn('h-3.5 w-3.5', config.color)} />
         <span className="text-[12px] font-medium text-text-secondary">{config.label}</span>
-        <span className="text-[11px] text-text-muted tabular-nums">{issues.length}</span>
-
-        {/* Add issue to group */}
-        <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100">
-          <Plus className="h-3 w-3 text-text-muted" />
-        </div>
+        <span className="text-[11px] text-text-muted tabular-nums">{tasks.length}</span>
       </button>
 
-      {/* Issue rows */}
+      {/* Task rows */}
       <AnimatePresence initial={false}>
         {expanded && (
           <motion.div
@@ -180,8 +168,8 @@ function StatusGroup({ status, issues }: { status: IssueStatus; issues: Issue[] 
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            {issues.map((issue, i) => (
-              <IssueRow key={issue.id} issue={issue} index={i} />
+            {tasks.map((task, i) => (
+              <IssueRow key={task.id} task={task} index={globalOffset + i} />
             ))}
           </motion.div>
         )}
@@ -190,10 +178,101 @@ function StatusGroup({ status, issues }: { status: IssueStatus; issues: Issue[] 
   );
 }
 
+/* ── Quick-add inline form ── */
+function QuickAddTask({ projectId }: { projectId: string }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const createTask = useCreateTask();
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    try {
+      await createTask.mutateAsync({ title: title.trim(), projectId });
+      toast.success('Task created');
+      setTitle('');
+      setOpen(false);
+    } catch {
+      toast.error('Failed to create task');
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 w-full h-[32px] px-3 text-text-muted hover:text-text-tertiary hover:bg-surface-hover/30 transition-colors cursor-pointer border-t border-border/40"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        <span className="text-[12px]">New issue</span>
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 px-3 h-[36px] border-t border-border/40 bg-surface-hover/20">
+      <Plus className="h-3.5 w-3.5 text-text-muted shrink-0" />
+      <input
+        autoFocus
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Issue title…"
+        className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-muted outline-none"
+        onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+      />
+      <button
+        type="submit"
+        disabled={createTask.isPending || !title.trim()}
+        className="h-6 px-2 bg-primary text-white rounded text-[11px] font-medium disabled:opacity-50 cursor-pointer"
+      >
+        {createTask.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Add'}
+      </button>
+    </form>
+  );
+}
+
 /* ── Dashboard Page ── */
 function DashboardPage() {
-  const grouped = groupByStatus(mockIssues);
-  const statusOrder: IssueStatus[] = ['in-progress', 'todo', 'backlog', 'done', 'cancelled'];
+  const { projectId: routeProjectId } = useParams<{ projectId: string }>();
+  const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
+
+  // If we're on /projects/:projectId use that; otherwise get first project
+  const { data: projects } = useProjects(workspaceId);
+  const firstProjectId = projects?.[0]?.id ?? null;
+  const activeProjectId = routeProjectId ?? firstProjectId;
+
+  const { data: project } = useProject(activeProjectId);
+  const { data: tasks, isLoading } = useTasks(activeProjectId);
+
+  if (isLoading || !tasks) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-5 w-5 animate-spin text-text-muted" />
+      </div>
+    );
+  }
+
+  // Group by status
+  const statusOrder: DisplayStatus[] = ['in-progress', 'todo', 'backlog', 'done', 'cancelled'];
+  const grouped: Record<DisplayStatus, Task[]> = {
+    'backlog': [],
+    'todo': [],
+    'in-progress': [],
+    'done': [],
+    'cancelled': [],
+  };
+  for (const task of tasks) {
+    const key = statusMap[task.status];
+    grouped[key].push(task);
+  }
+
+  // Calculate global offsets for continuous numbering
+  let offset = 0;
+  const offsets: Record<DisplayStatus, number> = {} as Record<DisplayStatus, number>;
+  for (const s of statusOrder) {
+    offsets[s] = offset;
+    offset += grouped[s].length;
+  }
 
   return (
     <motion.div
@@ -202,18 +281,38 @@ function DashboardPage() {
       transition={{ duration: 0.2 }}
       className="h-full"
     >
+      {/* Project header */}
+      {project && (
+        <div className="flex items-center gap-2 px-3 h-[32px] border-b border-border/60 bg-surface/30">
+          <span className="text-[12px] font-medium text-text-secondary">{project.name}</span>
+          <span className="text-[11px] text-text-muted">·</span>
+          <span className="text-[11px] text-text-muted tabular-nums">{tasks.length} issues</span>
+        </div>
+      )}
+
       {/* Issue list */}
       <div className="divide-y divide-border/40">
         {statusOrder.map((status) => (
-          <StatusGroup key={status} status={status} issues={grouped[status]} />
+          <StatusGroup
+            key={status}
+            status={status}
+            tasks={grouped[status]}
+            globalOffset={offsets[status]}
+          />
         ))}
       </div>
 
-      {/* Bottom: quick add */}
-      <button className="flex items-center gap-2 w-full h-[32px] px-3 text-text-muted hover:text-text-tertiary hover:bg-surface-hover/30 transition-colors cursor-pointer border-t border-border/40">
-        <Plus className="h-3.5 w-3.5" />
-        <span className="text-[12px]">New issue</span>
-      </button>
+      {/* Quick add */}
+      {activeProjectId && <QuickAddTask projectId={activeProjectId} />}
+
+      {/* Empty state */}
+      {tasks.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <CircleDashed className="h-8 w-8 text-text-muted mb-3" />
+          <p className="text-[13px] text-text-tertiary">No issues yet</p>
+          <p className="text-[12px] text-text-muted mt-1">Use the button below to create your first issue</p>
+        </div>
+      )}
     </motion.div>
   );
 }
