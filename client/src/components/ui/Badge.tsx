@@ -7,9 +7,9 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const variantStyles: Record<string, string> = {
   default: 'bg-surface-hover text-text-secondary border border-border',
-  success: 'bg-success/10 text-success border border-success/20',
-  warning: 'bg-warning/10 text-warning border border-warning/20',
-  danger: 'bg-danger/10 text-danger border border-danger/20',
+  success: 'bg-success/8 text-success/80 border border-success/15',
+  warning: 'bg-warning/8 text-warning/80 border border-warning/15',
+  danger: 'bg-danger/8 text-danger/80 border border-danger/15',
 };
 
 function Badge({ variant = 'default', className, ...props }: BadgeProps) {

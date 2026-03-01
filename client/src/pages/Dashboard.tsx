@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 function DashboardPage() {
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-6"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -21,21 +21,19 @@ function DashboardPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { label: 'Active Projects', value: '—', icon: FolderKanban },
-          { label: 'Team Members', value: '—', icon: Users },
-          { label: 'Tasks Completed', value: '—', icon: BarChart3 },
+          { label: 'Active Projects', value: '12', icon: FolderKanban },
+          { label: 'Team Members', value: '5', icon: Users },
+          { label: 'Tasks Completed', value: '48', icon: BarChart3 },
         ].map((stat) => (
           <Card key={stat.label}>
-            <CardContent className="flex items-center gap-4">
-              <div className="p-2 rounded-md bg-primary/10">
-                <stat.icon className="h-4 w-4 text-primary" />
+            <CardContent>
+              <div className="flex items-center gap-1.5 mb-1">
+                <stat.icon className="h-3.5 w-3.5 text-text-tertiary" />
+                <p className="text-xs font-medium text-text-tertiary uppercase tracking-wider">{stat.label}</p>
               </div>
-              <div>
-                <p className="text-xs text-text-tertiary">{stat.label}</p>
-                <p className="text-lg font-semibold text-text-primary">
-                  {stat.value}
-                </p>
-              </div>
+              <p className="text-2xl font-semibold text-text-primary">
+                {stat.value}
+              </p>
             </CardContent>
           </Card>
         ))}
