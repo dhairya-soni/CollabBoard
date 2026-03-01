@@ -19,12 +19,12 @@ function Tooltip({ content, children, side = 'top', delayDuration = 200 }: Toolt
             side={side}
             sideOffset={6}
             className={cn(
-              'z-50 rounded-lg bg-surface-light px-3 py-1.5 text-xs text-text-primary shadow-md',
+              'z-50 rounded-md bg-surface-hover px-2.5 py-1 text-xs text-text-primary border border-border',
               'animate-in fade-in-0 zoom-in-95',
             )}
           >
             {content}
-            <TooltipPrimitive.Arrow className="fill-surface-light" />
+            <TooltipPrimitive.Arrow className="fill-surface-hover" />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

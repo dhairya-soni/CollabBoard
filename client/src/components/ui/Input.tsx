@@ -31,8 +31,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors',
-              leftIcon && 'pl-10',
+              'w-full h-8 bg-background border border-border rounded-md px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary transition-colors',
+              leftIcon && 'pl-9',
               error && 'border-danger focus:ring-danger/20 focus:border-danger',
               className,
             )}
@@ -70,7 +70,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-y min-h-20',
+            'w-full bg-background border border-border rounded-md px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary transition-colors resize-y min-h-20',
             error && 'border-danger focus:ring-danger/20 focus:border-danger',
             className,
           )}

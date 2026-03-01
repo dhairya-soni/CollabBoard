@@ -9,8 +9,8 @@ function ThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
     <button
       onClick={toggleTheme}
       className={cn(
-        'flex items-center gap-2 rounded-lg p-2 text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors cursor-pointer',
-        collapsed && 'justify-center',
+        'flex items-center gap-3 h-9 rounded-md px-3 text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer w-full',
+        collapsed && 'justify-center px-0 w-9 mx-auto',
       )}
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
@@ -20,7 +20,7 @@ function ThemeToggle({ collapsed = false }: { collapsed?: boolean }) {
         <Moon className="h-4 w-4 shrink-0" />
       )}
       {!collapsed && (
-        <span className="text-sm">
+        <span className="text-sm font-medium">
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </span>
       )}

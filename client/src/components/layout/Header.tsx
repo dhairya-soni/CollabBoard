@@ -25,23 +25,23 @@ function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle }: Hea
   return (
     <header
       className={cn(
-        'sticky top-0 z-20 h-14 bg-background/80 backdrop-blur-md border-b border-border flex items-center justify-between px-4 md:px-6',
+        'sticky top-0 z-20 h-16 bg-background border-b border-border flex items-center justify-between px-4 md:px-6',
       )}
     >
       {/* Left: Mobile menu + Breadcrumbs */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMobileMenuToggle}
-          className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors cursor-pointer"
+          className="md:hidden w-8 h-8 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           aria-label="Open sidebar"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
 
         <nav className="flex items-center gap-1.5 text-sm">
           {breadcrumbs.map((crumb, i) => (
             <span key={i} className="flex items-center gap-1.5">
-              {i > 0 && <span className="text-text-secondary">/</span>}
+              {i > 0 && <span className="text-text-tertiary">/</span>}
               <span
                 className={
                   i === breadcrumbs.length - 1
@@ -56,21 +56,32 @@ function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle }: Hea
         </nav>
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-1">
+      {/* Right: Search bar trigger + Actions */}
+      <div className="flex items-center gap-2">
+        {/* Search trigger — looks like an input */}
         <button
-          className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors cursor-pointer"
+          className="hidden md:flex items-center gap-2 w-56 h-8 bg-surface border border-border rounded-md px-3 text-sm text-text-tertiary hover:border-border/80 transition-colors cursor-pointer"
+          aria-label="Search"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span>Search...</span>
+          <kbd className="ml-auto text-[10px] font-mono text-text-tertiary bg-surface-hover rounded px-1.5 py-0.5">
+            /
+          </kbd>
+        </button>
+        {/* Mobile search icon */}
+        <button
+          className="md:hidden w-8 h-8 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           aria-label="Search"
         >
           <Search className="h-4 w-4" />
         </button>
         <button
-          className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors relative cursor-pointer"
+          className="w-8 h-8 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors relative cursor-pointer"
           aria-label="Notifications"
         >
           <Bell className="h-4 w-4" />
-          {/* Notification dot */}
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-danger" />
+          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
         </button>
       </div>
     </header>

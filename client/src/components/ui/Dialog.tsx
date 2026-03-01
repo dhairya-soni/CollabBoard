@@ -30,7 +30,7 @@ function Dialog({
         <DialogPrimitive.Content
           className={cn(
             'fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2',
-            'rounded-xl bg-surface border border-border shadow-2xl shadow-black/40 p-6',
+            'rounded-lg bg-surface border border-border p-6',
             'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
             'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
             className,
@@ -48,7 +48,7 @@ function Dialog({
                 </DialogPrimitive.Description>
               )}
             </div>
-            <DialogPrimitive.Close className="rounded-lg p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-light transition-colors">
+            <DialogPrimitive.Close className="rounded-md p-1.5 text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors">
               <X className="h-4 w-4" />
             </DialogPrimitive.Close>
           </div>

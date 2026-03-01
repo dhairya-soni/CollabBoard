@@ -32,7 +32,7 @@ function AppShell() {
           onMobileMenuToggle={() => setMobileOpen(true)}
         />
 
-        <main className="p-4 md:p-6">
+        <main className="px-4 py-3 md:px-6 md:py-4">
           <Outlet />
         </main>
       </div>
