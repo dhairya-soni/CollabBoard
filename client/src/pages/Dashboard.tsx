@@ -1,17 +1,8 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useMemo, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
-  Circle,
-  CircleDashed,
-  CircleDot,
-  CheckCircle2,
-  XCircle,
-  SignalLow,
-  SignalMedium,
-  SignalHigh,
-  AlertTriangle,
   ChevronRight,
   MoreHorizontal,
   Plus,
@@ -20,47 +11,18 @@ import {
 import { useTasks, useCreateTask } from '@/hooks/useTasks';
 import { useProjects, useProject } from '@/hooks/useProjects';
 import { useWorkspaceStore } from '@/stores/workspace';
-import type { Task, TaskStatus, TaskPriority } from '@/types/api';
+import { useViewStore } from '@/stores/view';
+import { useFilterStore } from '@/stores/filter';
+import {
+  statusMap,
+  priorityMap,
+  statusConfig,
+  priorityConfig,
+  type DisplayStatus,
+} from '@/lib/taskConfig';
+import { KanbanBoard, TaskDetailPanel } from '@/components/kanban';
+import type { Task } from '@/types/api';
 import { toast } from 'sonner';
-
-/* ── Local display types ── */
-type DisplayStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'cancelled';
-type DisplayPriority = 'urgent' | 'high' | 'medium' | 'low' | 'none';
-
-/* ── Map API enums to display keys ── */
-const statusMap: Record<TaskStatus, DisplayStatus> = {
-  BACKLOG: 'backlog',
-  TODO: 'todo',
-  IN_PROGRESS: 'in-progress',
-  DONE: 'done',
-  CANCELLED: 'cancelled',
-};
-
-const priorityMap: Record<TaskPriority, DisplayPriority> = {
-  URGENT: 'urgent',
-  HIGH: 'high',
-  MEDIUM: 'medium',
-  LOW: 'low',
-  NONE: 'none',
-};
-
-/* ── Status config ── */
-const statusConfig: Record<DisplayStatus, { icon: React.ElementType; color: string; label: string }> = {
-  backlog: { icon: CircleDashed, color: 'text-text-muted', label: 'Backlog' },
-  todo: { icon: Circle, color: 'text-text-tertiary', label: 'Todo' },
-  'in-progress': { icon: CircleDot, color: 'text-[#F5A623]', label: 'In Progress' },
-  done: { icon: CheckCircle2, color: 'text-[#5E6AD2]', label: 'Done' },
-  cancelled: { icon: XCircle, color: 'text-text-muted', label: 'Cancelled' },
-};
-
-/* ── Priority config ── */
-const priorityConfig: Record<DisplayPriority, { icon: React.ElementType; color: string }> = {
-  urgent: { icon: AlertTriangle, color: 'text-[#F44336]' },
-  high: { icon: SignalHigh, color: 'text-[#FB923C]' },
-  medium: { icon: SignalMedium, color: 'text-[#F5A623]' },
-  low: { icon: SignalLow, color: 'text-text-tertiary' },
-  none: { icon: SignalLow, color: 'text-text-muted' },
-};
 
 /* ── Derive a short identifier from task title position ── */
 function taskIdentifier(_task: Task, index: number): string {
@@ -68,7 +30,7 @@ function taskIdentifier(_task: Task, index: number): string {
 }
 
 /* ── Issue Row ── */
-function IssueRow({ task, index }: { task: Task; index: number }) {
+function IssueRow({ task, index, onClick }: { task: Task; index: number; onClick?: (task: Task) => void }) {
   const displayStatus = statusMap[task.status];
   const displayPriority = priorityMap[task.priority];
   const status = statusConfig[displayStatus];
@@ -82,6 +44,7 @@ function IssueRow({ task, index }: { task: Task; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15, delay: index * 0.02 }}
       className="group flex items-center gap-3 h-[36px] px-3 border-b border-border/60 hover:bg-surface-hover/40 transition-colors cursor-pointer"
+      onClick={() => onClick?.(task)}
     >
       {/* Priority */}
       <PriorityIcon className={cn('h-3.5 w-3.5 shrink-0', priority.color)} />
@@ -129,10 +92,12 @@ function StatusGroup({
   status,
   tasks,
   globalOffset,
+  onTaskClick,
 }: {
   status: DisplayStatus;
   tasks: Task[];
   globalOffset: number;
+  onTaskClick?: (task: Task) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const config = statusConfig[status];
@@ -169,7 +134,7 @@ function StatusGroup({
             className="overflow-hidden"
           >
             {tasks.map((task, i) => (
-              <IssueRow key={task.id} task={task} index={globalOffset + i} />
+              <IssueRow key={task.id} task={task} index={globalOffset + i} onClick={onTaskClick} />
             ))}
           </motion.div>
         )}
@@ -235,6 +200,8 @@ function QuickAddTask({ projectId }: { projectId: string }) {
 function DashboardPage() {
   const { projectId: routeProjectId } = useParams<{ projectId: string }>();
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
+  const viewMode = useViewStore((s) => s.viewMode);
+  const { status: filterStatus, priority: filterPriority, search: filterSearch } = useFilterStore();
 
   // If we're on /projects/:projectId use that; otherwise get first project
   const { data: projects } = useProjects(workspaceId);
@@ -244,6 +211,30 @@ function DashboardPage() {
   const { data: project } = useProject(activeProjectId);
   const { data: tasks, isLoading } = useTasks(activeProjectId);
 
+  // Apply client-side filters
+  const filteredTasks = useMemo(() => {
+    if (!tasks) return [];
+    let result = tasks;
+    if (filterStatus) {
+      result = result.filter((t) => t.status === filterStatus);
+    }
+    if (filterPriority) {
+      result = result.filter((t) => t.priority === filterPriority);
+    }
+    if (filterSearch) {
+      const q = filterSearch.toLowerCase();
+      result = result.filter((t) => t.title.toLowerCase().includes(q));
+    }
+    return result;
+  }, [tasks, filterStatus, filterPriority, filterSearch]);
+
+  // Task detail panel state
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTaskId(task.id);
+  };
+
   if (isLoading || !tasks) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -252,7 +243,7 @@ function DashboardPage() {
     );
   }
 
-  // Group by status
+  // Group by status (for list view)
   const statusOrder: DisplayStatus[] = ['in-progress', 'todo', 'backlog', 'done', 'cancelled'];
   const grouped: Record<DisplayStatus, Task[]> = {
     'backlog': [],
@@ -261,7 +252,7 @@ function DashboardPage() {
     'done': [],
     'cancelled': [],
   };
-  for (const task of tasks) {
+  for (const task of filteredTasks) {
     const key = statusMap[task.status];
     grouped[key].push(task);
   }
@@ -275,45 +266,64 @@ function DashboardPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.2 }}
-      className="h-full"
-    >
-      {/* Project header */}
-      {project && (
-        <div className="flex items-center gap-2 px-3 h-[32px] border-b border-border/60 bg-surface/30">
-          <span className="text-[12px] font-medium text-text-secondary">{project.name}</span>
-          <span className="text-[11px] text-text-muted">·</span>
-          <span className="text-[11px] text-text-muted tabular-nums">{tasks.length} issues</span>
-        </div>
-      )}
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="h-full"
+      >
+        {/* Project header */}
+        {project && (
+          <div className="flex items-center gap-2 px-3 h-[32px] border-b border-border/60 bg-surface/30">
+            <span className="text-[12px] font-medium text-text-secondary">{project.name}</span>
+            <span className="text-[11px] text-text-muted">·</span>
+            <span className="text-[11px] text-text-muted tabular-nums">{filteredTasks.length} issues</span>
+          </div>
+        )}
 
-      {/* Issue list */}
-      <div className="divide-y divide-border/40">
-        {statusOrder.map((status) => (
-          <StatusGroup
-            key={status}
-            status={status}
-            tasks={grouped[status]}
-            globalOffset={offsets[status]}
+        {viewMode === 'board' ? (
+          /* ── Board View ── */
+          <KanbanBoard
+            tasks={filteredTasks}
+            isLoading={isLoading}
+            onTaskClick={handleTaskClick}
           />
-        ))}
-      </div>
+        ) : (
+          /* ── List View ── */
+          <>
+            <div className="divide-y divide-border/40">
+              {statusOrder.map((status) => (
+                <StatusGroup
+                  key={status}
+                  status={status}
+                  tasks={grouped[status]}
+                  globalOffset={offsets[status]}
+                  onTaskClick={handleTaskClick}
+                />
+              ))}
+            </div>
+            {activeProjectId && <QuickAddTask projectId={activeProjectId} />}
+          </>
+        )}
 
-      {/* Quick add */}
-      {activeProjectId && <QuickAddTask projectId={activeProjectId} />}
+        {/* Empty state */}
+        {filteredTasks.length === 0 && !isLoading && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="h-8 w-8 text-text-muted mb-3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <circle cx="12" cy="12" r="10" strokeDasharray="4 4" />
+              </svg>
+            </div>
+            <p className="text-[13px] text-text-tertiary">No issues yet</p>
+            <p className="text-[12px] text-text-muted mt-1">Use the button below to create your first issue</p>
+          </div>
+        )}
+      </motion.div>
 
-      {/* Empty state */}
-      {tasks.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <CircleDashed className="h-8 w-8 text-text-muted mb-3" />
-          <p className="text-[13px] text-text-tertiary">No issues yet</p>
-          <p className="text-[12px] text-text-muted mt-1">Use the button below to create your first issue</p>
-        </div>
-      )}
-    </motion.div>
+      {/* Task Detail Panel */}
+      <TaskDetailPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+    </>
   );
 }
 
