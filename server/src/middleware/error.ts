@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { Prisma } from '@prisma/client';
 
 /**
  * Custom application error with status code and machine-readable code.
@@ -58,15 +57,16 @@ export function errorHandler(
   }
 
   // Prisma unique constraint violation
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    if (err.code === 'P2002') {
+  if ('code' in err && typeof (err as Record<string, unknown>).code === 'string') {
+    const prismaErr = err as Error & { code: string };
+    if (prismaErr.code === 'P2002') {
       res.status(409).json({
         success: false,
         error: { message: 'A record with that value already exists', code: 'DUPLICATE_ENTRY' },
       });
       return;
     }
-    if (err.code === 'P2025') {
+    if (prismaErr.code === 'P2025') {
       res.status(404).json({
         success: false,
         error: { message: 'Record not found', code: 'NOT_FOUND' },
