@@ -34,8 +34,8 @@ router.post(
       });
 
       const token = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
-        expiresIn: env.JWT_EXPIRES_IN,
-      });
+        expiresIn: env.JWT_EXPIRES_IN as string & { __brand?: never },
+      } as jwt.SignOptions);
 
       res.status(201).json({ success: true, data: { user, token } });
     } catch (err) {
@@ -65,8 +65,8 @@ router.post(
       }
 
       const token = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
-        expiresIn: env.JWT_EXPIRES_IN,
-      });
+        expiresIn: env.JWT_EXPIRES_IN as string & { __brand?: never },
+      } as jwt.SignOptions);
 
       res.json({
         success: true,

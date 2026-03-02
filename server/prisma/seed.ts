@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * CollabBoard — Database Seed Script
  *
