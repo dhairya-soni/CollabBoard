@@ -14,7 +14,17 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin:
+      env.NODE_ENV === 'development'
+        ? (origin, cb) => {
+            // Allow any localhost origin in dev (Vite may pick a random port)
+            if (!origin || /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+              cb(null, true);
+            } else {
+              cb(new Error('CORS: origin not allowed'));
+            }
+          }
+        : env.CLIENT_URL,
     credentials: true,
   }),
 );
