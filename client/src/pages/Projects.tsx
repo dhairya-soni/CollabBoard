@@ -4,11 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useProjects, useCreateProject } from '@/hooks/useProjects';
 import { useWorkspaceStore } from '@/stores/workspace';
+import { ProjectMembersPanel } from '@/components/projects/ProjectMembersPanel';
+import type { Project } from '@/types/api';
 import {
   FolderKanban,
   Plus,
   Loader2,
   X,
+  Settings,
+  Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,6 +30,7 @@ export default function ProjectsPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [managingProject, setManagingProject] = useState<Project | null>(null);
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
@@ -82,6 +87,7 @@ export default function ProjectsPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.15, delay: i * 0.05 }}
+              className="relative group/card"
             >
               <Link
                 to={`/projects/${project.id}`}
@@ -92,9 +98,14 @@ export default function ProjectsPage() {
                     <FolderKanban className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[14px] font-medium text-text-primary group-hover:text-primary transition-colors truncate">
-                      {project.name}
-                    </h3>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-[14px] font-medium text-text-primary group-hover:text-primary transition-colors truncate">
+                        {project.name}
+                      </h3>
+                      {project.isPrivate && (
+                        <span title="Private project"><Lock className="h-3 w-3 text-amber-400 shrink-0" /></span>
+                      )}
+                    </div>
                     {project.description && (
                       <p className="text-[12px] text-text-tertiary mt-0.5 line-clamp-2">
                         {project.description}
@@ -112,10 +123,24 @@ export default function ProjectsPage() {
                       <span className="text-[11px] text-text-muted tabular-nums">
                         {project._count.tasks} task{project._count.tasks !== 1 ? 's' : ''}
                       </span>
+                      {project.isPrivate && project.projectMembers && (
+                        <span className="text-[11px] text-text-muted tabular-nums">
+                          {project.projectMembers.length} member{project.projectMembers.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               </Link>
+
+              {/* Settings gear — stops link navigation */}
+              <button
+                onClick={(e) => { e.preventDefault(); setManagingProject(project); }}
+                className="absolute top-2 right-2 h-6 w-6 rounded flex items-center justify-center text-text-muted opacity-0 group-hover/card:opacity-100 hover:text-text-primary hover:bg-surface-hover transition-all cursor-pointer"
+                title="Manage access"
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </button>
             </motion.div>
           ))}
         </div>
@@ -213,6 +238,14 @@ export default function ProjectsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Project members panel */}
+      {managingProject && (
+        <ProjectMembersPanel
+          project={managingProject}
+          onClose={() => setManagingProject(null)}
+        />
+      )}
     </motion.div>
   );
 }

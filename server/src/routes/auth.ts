@@ -33,6 +33,18 @@ router.post(
         select: { id: true, email: true, name: true, avatar: true, createdAt: true },
       });
 
+      // Auto-create a personal workspace for the new user
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const uniqueSlug = `${slug}-${user.id.slice(-6)}`;
+      await prisma.workspace.create({
+        data: {
+          name: `${name}'s Workspace`,
+          slug: uniqueSlug,
+          ownerId: user.id,
+          members: { create: { userId: user.id, role: 'ADMIN' } },
+        },
+      });
+
       const token = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
         expiresIn: env.JWT_EXPIRES_IN as string & { __brand?: never },
       } as jwt.SignOptions);

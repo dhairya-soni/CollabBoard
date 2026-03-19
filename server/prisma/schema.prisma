@@ -27,6 +27,7 @@ model User {
 
   ownedWorkspaces Workspace[]
   memberships     WorkspaceMember[]
+  projectMembers  ProjectMember[]
   createdTasks    Task[]          @relation("TaskCreator")
   assignedTasks   Task[]          @relation("TaskAssignee")
   comments        Comment[]
@@ -76,13 +77,47 @@ model Project {
   description String?
   status      String   @default("ACTIVE") // ACTIVE | PAUSED | COMPLETED | ARCHIVED
   workspaceId String
+  isPrivate   Boolean  @default(false)    // false = all workspace members; true = explicit members only
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  tasks     Task[]
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  projectMembers ProjectMember[]
+  whiteboard     Whiteboard?
 
   @@index([workspaceId])
+}
+
+// ── Whiteboard ───────────────────────────────────────────────
+// One whiteboard per project; data is a JSON array of WBElement stored as a string.
+
+model Whiteboard {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  data      String   @default("[]") // JSON: WBElement[]
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ── ProjectMember ────────────────────────────────────────────
+// Only used when Project.isPrivate = true.
+// Role: ADMIN (can manage members) | MEMBER (read/write tasks) | VIEWER (read only)
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String   @default("MEMBER") // ADMIN | MEMBER | VIEWER
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
 }
 
 // ── Task ────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -22,16 +22,27 @@ import {
 import { BoardColumn } from './BoardColumn';
 import { TaskCardOverlay } from './TaskCard';
 import { useUpdateTask } from '@/hooks/useTasks';
+import { useRealtimeTasks } from '@/hooks/useRealtimeTasks';
+import { useCursors } from '@/hooks/useCursors';
+import { CursorOverlay } from '@/components/realtime/CursorOverlay';
 import type { Task } from '@/types/api';
 
 interface KanbanBoardProps {
+  projectId: string | undefined;
   tasks: Task[];
   isLoading?: boolean;
   onTaskClick: (task: Task) => void;
 }
 
-export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps) {
+export function KanbanBoard({ projectId, tasks, isLoading, onTaskClick }: KanbanBoardProps) {
   const updateTask = useUpdateTask();
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  // Real-time: sync remote task changes into the cache
+  useRealtimeTasks(projectId);
+
+  // Real-time: track remote cursors + emit local cursor
+  const cursors = useCursors(boardRef as React.RefObject<HTMLElement | null>);
 
   /* ── Group tasks by status ── */
   const columns = useMemo(() => {
@@ -85,7 +96,6 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
     const task = tasks.find((t) => t.id === event.active.id);
     if (task) {
       setActiveTask(task);
-      // Initialize local columns for optimistic updates
       setLocalColumns({ ...columns });
     }
   };
@@ -98,7 +108,6 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
     const overId = over.id as string;
 
     const activeCol = findColumn(activeId);
-    // Determine target column
     let overCol: DisplayStatus | null = null;
     if (overId.startsWith('column-')) {
       overCol = overId.replace('column-', '') as DisplayStatus;
@@ -119,7 +128,6 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
       const movedTask = sourceItems.splice(activeIndex, 1)[0];
       if (!movedTask) return prev;
 
-      // Find index to insert at
       const overIndex = overId.startsWith('column-')
         ? destItems.length
         : destItems.findIndex((t) => t.id === overId);
@@ -171,7 +179,6 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
       }
     }
 
-    // Persist to API
     const newStatus = reverseStatusMap[overCol];
     const theTask = tasks.find((t) => t.id === activeId);
     if (!theTask) {
@@ -179,21 +186,14 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
       return;
     }
 
-    // Only call API if something changed
     if (theTask.status !== newStatus) {
       updateTask.mutate(
         { id: activeId, status: newStatus },
         {
-          onError: () => {
-            // Revert on failure
-            setLocalColumns(null);
-          },
+          onError: () => { setLocalColumns(null); },
         },
       );
     }
-
-    // Don't clear local columns immediately – let the query invalidation handle it
-    // setLocalColumns(null) will happen when tasks change via useMemo above
   };
 
   if (isLoading) {
@@ -213,10 +213,11 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
       onDragEnd={handleDragEnd}
     >
       <motion.div
+        ref={boardRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
-        className="flex gap-2 p-3 overflow-x-auto h-[calc(100vh-80px)]"
+        className="relative flex gap-2 p-3 overflow-x-auto h-[calc(100vh-80px)]"
       >
         {statusOrder.map((status) => (
           <BoardColumn
@@ -226,6 +227,9 @@ export function KanbanBoard({ tasks, isLoading, onTaskClick }: KanbanBoardProps)
             onTaskClick={onTaskClick}
           />
         ))}
+
+        {/* Remote cursors */}
+        <CursorOverlay cursors={cursors} containerRef={boardRef} />
       </motion.div>
 
       <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }}>

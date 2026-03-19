@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { createCommentSchema, updateCommentSchema } from '../schemas/comment.js';
 import { AppError } from '../middleware/error.js';
+import { broadcastToProject } from '../lib/socketServer.js';
 import type { AuthRequest } from '../types/index.js';
 
 const router = Router();
@@ -42,6 +43,12 @@ router.post(
           taskId,
           metadata: JSON.stringify({ preview: content.slice(0, 100) }),
         },
+      });
+
+      broadcastToProject(task.projectId, 'comment:added', {
+        taskId,
+        comment: comment as Record<string, unknown>,
+        addedBy: req.userId!,
       });
 
       res.status(201).json({ success: true, data: comment });

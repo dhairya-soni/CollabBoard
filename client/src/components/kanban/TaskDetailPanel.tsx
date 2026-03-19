@@ -21,6 +21,7 @@ import {
 } from '@/lib/taskConfig';
 import { useTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCreateComment } from '@/hooks/useComments';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import type { TaskStatus, TaskPriority } from '@/types/api';
 import { toast } from 'sonner';
 
@@ -38,6 +39,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
   const [description, setDescription] = useState('');
   const [comment, setComment] = useState('');
   const createComment = useCreateComment();
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator(taskId ?? '');
 
   // Sync local state when task loads
   useEffect(() => {
@@ -86,6 +88,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
   const handleCommentSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!comment.trim() || !task) return;
+    stopTyping();
     createComment.mutate(
       { content: comment.trim(), taskId: task.id },
       {
@@ -298,7 +301,8 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
                   <form onSubmit={handleCommentSubmit} className="flex gap-2">
                     <input
                       value={comment}
-                      onChange={(e) => setComment(e.target.value)}
+                      onChange={(e) => { setComment(e.target.value); startTyping(); }}
+                      onBlur={stopTyping}
                       placeholder="Write a comment…"
                       className="flex-1 h-8 bg-surface border border-border-strong/50 rounded px-3 text-[13px] text-text-primary placeholder:text-text-muted outline-none focus:border-primary/50 transition-colors"
                     />
@@ -314,6 +318,14 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
                       )}
                     </button>
                   </form>
+
+                  {/* Typing indicator */}
+                  {typingUsers.length > 0 && (
+                    <p className="text-[11px] text-text-muted mt-1.5 italic">
+                      {typingUsers.map((u) => u.name).join(', ')}{' '}
+                      {typingUsers.length === 1 ? 'is' : 'are'} typing…
+                    </p>
+                  )}
                 </div>
 
                 {/* Metadata */}

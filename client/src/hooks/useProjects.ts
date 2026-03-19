@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Project, ApiResponse } from '@/types/api';
+import type { Project, ProjectMember, ApiResponse } from '@/types/api';
 
 /* ── Keys ── */
 export const projectKeys = {
@@ -56,6 +56,67 @@ export function useDeleteProject() {
       await api.delete(`/projects/${id}`);
     },
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+/* ── Toggle project privacy ── */
+export function useUpdateProject(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { isPrivate?: boolean; name?: string; description?: string; status?: string }) => {
+      const { data } = await api.patch<ApiResponse<Project>>(`/projects/${projectId}`, body);
+      return data.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+/* ── Add project member by email ── */
+export function useAddProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { email: string; role?: 'ADMIN' | 'MEMBER' | 'VIEWER' }) => {
+      const { data } = await api.post<ApiResponse<ProjectMember>>(`/projects/${projectId}/members`, body);
+      return data.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+/* ── Change project member role ── */
+export function useChangeProjectMemberRole(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: 'ADMIN' | 'MEMBER' | 'VIEWER' }) => {
+      const { data } = await api.patch<ApiResponse<ProjectMember>>(
+        `/projects/${projectId}/members/${userId}`,
+        { role },
+      );
+      return data.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+/* ── Remove project member ── */
+export function useRemoveProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await api.delete(`/projects/${projectId}/members/${userId}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
       qc.invalidateQueries({ queryKey: ['projects'] });
     },
   });

@@ -1,5 +1,5 @@
 import { useState, useMemo, type FormEvent } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import {
@@ -7,9 +7,14 @@ import {
   MoreHorizontal,
   Plus,
   Loader2,
+  Users,
+  LayoutGrid,
 } from 'lucide-react';
+import { ProjectMembersPanel } from '@/components/projects/ProjectMembersPanel';
+import type { Project } from '@/types/api';
 import { useTasks, useCreateTask } from '@/hooks/useTasks';
 import { useProjects, useProject } from '@/hooks/useProjects';
+import { usePresence } from '@/hooks/usePresence';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { useViewStore } from '@/stores/view';
 import { useFilterStore } from '@/stores/filter';
@@ -21,6 +26,7 @@ import {
   type DisplayStatus,
 } from '@/lib/taskConfig';
 import { KanbanBoard, TaskDetailPanel } from '@/components/kanban';
+import { PresenceBar } from '@/components/realtime/PresenceBar';
 import type { Task } from '@/types/api';
 import { toast } from 'sonner';
 
@@ -210,6 +216,7 @@ function DashboardPage() {
 
   const { data: project } = useProject(activeProjectId);
   const { data: tasks, isLoading } = useTasks(activeProjectId);
+  const onlineUsers = usePresence(activeProjectId ?? undefined);
 
   // Apply client-side filters
   const filteredTasks = useMemo(() => {
@@ -230,6 +237,7 @@ function DashboardPage() {
 
   // Task detail panel state
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [managingProject, setManagingProject] = useState<Project | null>(null);
 
   const handleTaskClick = (task: Task) => {
     setSelectedTaskId(task.id);
@@ -275,16 +283,38 @@ function DashboardPage() {
       >
         {/* Project header */}
         {project && (
-          <div className="flex items-center gap-2 px-3 h-[32px] border-b border-border/60 bg-surface/30">
-            <span className="text-[12px] font-medium text-text-secondary">{project.name}</span>
-            <span className="text-[11px] text-text-muted">·</span>
-            <span className="text-[11px] text-text-muted tabular-nums">{filteredTasks.length} issues</span>
+          <div className="flex items-center justify-between px-3 h-[32px] border-b border-border/60 bg-surface/30">
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-medium text-text-secondary">{project.name}</span>
+              <span className="text-[11px] text-text-muted">·</span>
+              <span className="text-[11px] text-text-muted tabular-nums">{filteredTasks.length} issues</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setManagingProject(project)}
+                className="flex items-center gap-1 h-6 px-2 rounded text-[11px] text-text-muted hover:text-text-secondary hover:bg-surface-hover transition-colors cursor-pointer"
+                title="Manage project members"
+              >
+                <Users className="h-3 w-3" />
+                <span>Members</span>
+              </button>
+              <Link
+                to={`/projects/${activeProjectId}/whiteboard`}
+                className="flex items-center gap-1 h-6 px-2 rounded text-[12px] text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors"
+                title="Open whiteboard"
+              >
+                <LayoutGrid className="h-3 w-3" />
+                <span>Whiteboard</span>
+              </Link>
+              <PresenceBar users={onlineUsers} />
+            </div>
           </div>
         )}
 
         {viewMode === 'board' ? (
           /* ── Board View ── */
           <KanbanBoard
+            projectId={activeProjectId ?? undefined}
             tasks={filteredTasks}
             isLoading={isLoading}
             onTaskClick={handleTaskClick}
@@ -323,6 +353,14 @@ function DashboardPage() {
 
       {/* Task Detail Panel */}
       <TaskDetailPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+
+      {/* Project Members Panel */}
+      {managingProject && (
+        <ProjectMembersPanel
+          project={managingProject}
+          onClose={() => setManagingProject(null)}
+        />
+      )}
     </>
   );
 }
