@@ -6,6 +6,7 @@ import { workspaceRoutes } from './workspaces.js';
 import { projectRoutes } from './projects.js';
 import { taskRoutes } from './tasks.js';
 import { commentRoutes } from './comments.js';
+import { whiteboardRoutes } from './whiteboard.js';
 import type { AuthRequest } from '../types/index.js';
 
 const router = Router();
@@ -18,6 +19,7 @@ router.use('/workspaces', workspaceRoutes);
 router.use('/projects', projectRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/comments', commentRoutes);
+router.use('/projects', whiteboardRoutes);
 
 /* ── Nested comment listing under tasks ── */
 router.get(

@@ -6,6 +6,7 @@ import RegisterPage from '@/pages/Register';
 import DashboardPage from '@/pages/Dashboard';
 import ProjectsPage from '@/pages/Projects';
 import SettingsPage from '@/pages/Settings';
+import WhiteboardPage from '@/pages/WhiteboardPage';
 import { useAuthStore } from '@/stores/auth';
 
 /* ── 404 ── */
@@ -56,6 +57,7 @@ function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/:projectId" element={<DashboardPage />} />
+          <Route path="/projects/:projectId/whiteboard" element={<WhiteboardPage />} />
           <Route path="/inbox" element={<PlaceholderPage title="Inbox" description="Your notifications and updates will appear here." />} />
           <Route path="/views" element={<PlaceholderPage title="Views" description="Create filtered views to save and share with others." />} />
           <Route path="/roadmaps" element={<PlaceholderPage title="Roadmaps" description="Plan and track your product roadmap." />} />

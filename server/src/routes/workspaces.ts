@@ -142,6 +142,68 @@ router.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction
 });
 
 /* ────────────────────────────────────────────────────────────
+ * POST /api/workspaces/:id/members — Invite user by email (admin only)
+ * ──────────────────────────────────────────────────────────── */
+router.post('/:id/members', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: req.params.id as string, userId: req.userId! } },
+    });
+    if (!membership || membership.role !== 'ADMIN') {
+      throw new AppError(403, 'FORBIDDEN', 'Only admins can invite members');
+    }
+
+    const { email, role = 'MEMBER' } = req.body;
+    if (!email) throw new AppError(400, 'VALIDATION_ERROR', 'Email is required');
+    if (!['ADMIN', 'MEMBER'].includes(role)) throw new AppError(400, 'VALIDATION_ERROR', 'Invalid role');
+
+    const invitee = await prisma.user.findUnique({ where: { email } });
+    if (!invitee) throw new AppError(404, 'NOT_FOUND', 'No user found with that email address');
+
+    const existing = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: req.params.id as string, userId: invitee.id } },
+    });
+    if (existing) throw new AppError(409, 'ALREADY_MEMBER', 'This user is already a member');
+
+    const newMember = await prisma.workspaceMember.create({
+      data: { workspaceId: req.params.id as string, userId: invitee.id, role },
+      include: { user: { select: { id: true, name: true, email: true, avatar: true } } },
+    });
+
+    res.status(201).json({ success: true, data: newMember });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ────────────────────────────────────────────────────────────
+ * DELETE /api/workspaces/:id/members/:userId — Remove member (admin only)
+ * ──────────────────────────────────────────────────────────── */
+router.delete('/:id/members/:userId', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const membership = await prisma.workspaceMember.findUnique({
+      where: { workspaceId_userId: { workspaceId: req.params.id as string, userId: req.userId! } },
+    });
+    if (!membership || membership.role !== 'ADMIN') {
+      throw new AppError(403, 'FORBIDDEN', 'Only admins can remove members');
+    }
+
+    const workspace = await prisma.workspace.findUnique({ where: { id: req.params.id as string } });
+    if (workspace?.ownerId === req.params.userId) {
+      throw new AppError(400, 'CANNOT_REMOVE_OWNER', 'Cannot remove the workspace owner');
+    }
+
+    await prisma.workspaceMember.delete({
+      where: { workspaceId_userId: { workspaceId: req.params.id as string, userId: req.params.userId as string } },
+    });
+
+    res.json({ success: true, data: { message: 'Member removed' } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ────────────────────────────────────────────────────────────
  * GET /api/workspaces/:id/projects — List projects in workspace
  * ──────────────────────────────────────────────────────────── */
 router.get('/:id/projects', async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -152,8 +214,20 @@ router.get('/:id/projects', async (req: AuthRequest, res: Response, next: NextFu
     if (!member) throw new AppError(403, 'FORBIDDEN', 'Not a member of this workspace');
 
     const projects = await prisma.project.findMany({
-      where: { workspaceId: req.params.id },
-      include: { _count: { select: { tasks: true } } },
+      where: {
+        workspaceId: req.params.id,
+        // Hide private projects unless user is an explicit project member
+        OR: [
+          { isPrivate: false },
+          { isPrivate: true, projectMembers: { some: { userId: req.userId! } } },
+        ],
+      },
+      include: {
+        _count: { select: { tasks: true } },
+        projectMembers: {
+          include: { user: { select: { id: true, name: true, avatar: true, email: true } } },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 

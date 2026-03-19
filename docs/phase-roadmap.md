@@ -55,28 +55,61 @@ CollabBoard is built in **8 sequential phases** with strict review gates.
 
 ---
 
-## Phase 4: Real-time Collaboration
-**Days 13–16 | Status: NOT STARTED**
+## Phase 4: Real-time Collaboration + Access Control
+**Days 13–16 | Status: ✅ COMPLETE**
 
-- Socket.io server + Redis adapter
-- Room management
-- Live cursor tracking (throttled)
-- Live task updates
-- "User is typing" in comments
-- Online presence indicators
-- Conflict resolution
+### Real-time Collaboration
+- Socket.io server attached to HTTP server (in-memory adapter for dev, Redis-ready for prod)
+- JWT auth middleware on socket handshake
+- Room management: join/leave project rooms on board mount/unmount
+- Live task updates: task:move, task:update, task:create, task:delete events → TanStack Query cache invalidation
+- Server-side broadcasting pattern: API routes emit after every mutation (not client-side)
+- Live cursor tracking (throttled at 50ms / ~20fps) with colored named cursors overlay
+- Online presence indicators: stacked avatars + count in board header
+- "User is typing" in comments with auto-clear timeout
+- Conflict resolution: own-user events filtered client-side to avoid duplicate updates
+
+### Workspace Membership
+- Auto-create personal workspace on register (new users always have a workspace)
+- Workspace invite by email (admin only) via Settings → Members tab
+- Remove workspace member (admin only, cannot remove owner)
+- Role system: ADMIN | MEMBER
+
+### Project-level Access Control (Micromanagement)
+- `isPrivate` flag on projects (default: workspace-visible)
+- `ProjectMember` table: explicit per-project membership (ADMIN | MEMBER | VIEWER)
+- Private projects hidden from workspace listing unless user is a ProjectMember
+- Privacy toggle from ProjectMembersPanel (gear icon on project card)
+- Invite/remove project members by email with role assignment
+- **Inline role editing**: change any member's role via dropdown directly in the panel
+- **Workspace members list**: shows all workspace members not yet in the project with one-click "Add" button
+- **Members button in board header**: manage project members from inside the board without navigating away
+- `PATCH /projects/:id/members/:userId` endpoint to change member role
+- Creator auto-added as project ADMIN when making a project private
+- Lock icon badge on private project cards
 
 ---
 
 ## Phase 5: Infinite Canvas Whiteboard
-**Days 17–21 | Status: NOT STARTED**
+**Days 17–21 | Status: ✅ COMPLETE**
 
-- Canvas with pan/zoom (HTML5 Canvas or Fabric.js or react-konva)
-- Sticky notes, text, shapes, arrows
-- Select/move/resize/delete
-- Bi-directional task linking
-- Minimap
-- Auto-save + export to PNG
+- `react-konva` + `konva` for canvas rendering
+- Infinite canvas with pan (middle-mouse drag) and zoom (mouse wheel, zoom buttons)
+- Tool palette: Select (V), Sticky Note (S), Text (T), Rectangle (R), Circle (C), Arrow (A)
+- Click to place sticky/text; click+drag to draw rect/circle/arrow
+- Select tool: click to select, drag to move, Transformer handles for resize + rotate
+- Double-click to edit text content (floating textarea overlay at canvas coords)
+- Delete key to remove selected element
+- Undo/Redo stack (Ctrl+Z / Ctrl+Y), 50-state history
+- Color palette (6 swatches) per tool; arrow inherits active color
+- Dot-grid background with parallax offset to match pan/zoom
+- SVG minimap (bottom-right): colored rects for each element + viewport indicator
+- Auto-save: debounced 2s → `PUT /api/projects/:id/whiteboard`
+- Real-time sync: `whiteboard:update` socket event relayed to all project room members
+- Export PNG via Konva `stage.toDataURL()` (2× pixel ratio)
+- "Whiteboard" button in board header → `/projects/:id/whiteboard`
+- Backend: `Whiteboard` Prisma model (one per project, JSON blob), `GET`/`PUT` endpoints
+- Access control reuses `verifyProjectAccess` from projects route
 
 ---
 

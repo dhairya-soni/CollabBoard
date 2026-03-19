@@ -4,6 +4,15 @@ import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
 import type { AuthRequest } from '../types/index.js';
 
+/** Verify a JWT and return the payload, or null if invalid. */
+export function verifyToken(token: string): { userId: string } | null {
+  try {
+    return jwt.verify(token, env.JWT_SECRET) as { userId: string };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * JWT authentication middleware.
  * Extracts Bearer token, verifies it, attaches userId to request.

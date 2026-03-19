@@ -46,3 +46,26 @@ export function useCreateWorkspace() {
     onSuccess: () => qc.invalidateQueries({ queryKey: workspaceKeys.all }),
   });
 }
+
+/* ── Add member by email ── */
+export function useAddMember(workspaceId: string | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { email: string; role?: 'ADMIN' | 'MEMBER' }) => {
+      const { data } = await api.post(`/workspaces/${workspaceId}/members`, body);
+      return data.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workspaceKeys.detail(workspaceId!) }),
+  });
+}
+
+/* ── Remove member ── */
+export function useRemoveMember(workspaceId: string | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await api.delete(`/workspaces/${workspaceId}/members/${userId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workspaceKeys.detail(workspaceId!) }),
+  });
+}

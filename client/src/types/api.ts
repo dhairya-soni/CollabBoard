@@ -41,15 +41,26 @@ export interface WorkspaceMember {
 }
 
 /* ── Project ── */
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: 'ADMIN' | 'MEMBER' | 'VIEWER';
+  joinedAt: string;
+  user: UserProfile & { email: string };
+}
+
 export interface Project {
   id: string;
   name: string;
   description: string | null;
   status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ARCHIVED';
   workspaceId: string;
+  isPrivate: boolean;
   createdAt: string;
   updatedAt: string;
   _count: { tasks: number };
+  projectMembers?: ProjectMember[];
 }
 
 /* ── Task ── */

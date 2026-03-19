@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { createTaskSchema, updateTaskSchema } from '../schemas/task.js';
 import { AppError } from '../middleware/error.js';
+import { broadcastToProject } from '../lib/socketServer.js';
 import type { AuthRequest } from '../types/index.js';
 
 const router = Router();
@@ -71,6 +72,11 @@ router.post(
           taskId: task.id,
           metadata: JSON.stringify({ title: task.title }),
         },
+      });
+
+      broadcastToProject(task.projectId, 'task:created', {
+        task: task as Record<string, unknown>,
+        createdBy: req.userId!,
       });
 
       res.status(201).json({ success: true, data: task });
@@ -161,6 +167,12 @@ router.patch(
         });
       }
 
+      broadcastToProject(task.projectId, 'task:updated', {
+        taskId: task.id,
+        changes: req.body as Record<string, unknown>,
+        updatedBy: req.userId!,
+      });
+
       res.json({ success: true, data: task });
     } catch (err) {
       next(err);
@@ -178,6 +190,11 @@ router.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction
     await verifyTaskAccess(task.projectId, req.userId!);
 
     await prisma.task.delete({ where: { id: req.params.id } });
+
+    broadcastToProject(task.projectId, 'task:deleted', {
+      taskId: task.id,
+      deletedBy: req.userId!,
+    });
 
     res.json({ success: true, data: { message: 'Task deleted' } });
   } catch (err) {
