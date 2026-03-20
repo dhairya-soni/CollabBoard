@@ -22,6 +22,7 @@ import {
 import { useTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks';
 import { useCreateComment } from '@/hooks/useComments';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { useWorkspace } from '@/hooks/useWorkspaces';
 import type { TaskStatus, TaskPriority } from '@/types/api';
 import { toast } from 'sonner';
 
@@ -34,6 +35,10 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
   const { data: task, isLoading } = useTask(taskId);
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
+
+  // Fetch workspace members for assignee dropdown
+  const workspaceId = (task as { project?: { workspaceId?: string } } | undefined)?.project?.workspaceId ?? null;
+  const { data: workspace } = useWorkspace(workspaceId);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -213,23 +218,37 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
 
                   {/* Assignee */}
                   <PropertyRow label="Assignee">
-                    <div className="flex items-center gap-1.5 h-7 px-2 bg-surface border border-border-strong/50 rounded text-[12px] text-text-secondary">
-                      <User className="h-3 w-3 text-text-muted" />
-                      {task.assignee?.name ?? 'Unassigned'}
+                    <div className="flex items-center gap-1.5">
+                      <User className="h-3 w-3 text-text-muted shrink-0" />
+                      <select
+                        value={task.assignee?.id ?? ''}
+                        onChange={(e) =>
+                          updateTask.mutate({ id: task.id, assigneeId: e.target.value || undefined })
+                        }
+                        className="bg-surface border border-border-strong/50 rounded px-2 h-7 text-[12px] text-text-secondary outline-none cursor-pointer hover:border-border-strong transition-colors"
+                      >
+                        <option value="">Unassigned</option>
+                        {(workspace?.members ?? []).map((m) => (
+                          <option key={m.userId} value={m.userId}>
+                            {m.user.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </PropertyRow>
 
                   {/* Due date */}
                   <PropertyRow label="Due date">
-                    <div className="flex items-center gap-1.5 h-7 px-2 bg-surface border border-border-strong/50 rounded text-[12px] text-text-secondary">
-                      <Calendar className="h-3 w-3 text-text-muted" />
-                      {task.dueDate
-                        ? new Date(task.dueDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })
-                        : 'No date'}
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="h-3 w-3 text-text-muted shrink-0" />
+                      <input
+                        type="date"
+                        value={task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : ''}
+                        onChange={(e) =>
+                          updateTask.mutate({ id: task.id, dueDate: e.target.value || undefined })
+                        }
+                        className="bg-surface border border-border-strong/50 rounded px-2 h-7 text-[12px] text-text-secondary outline-none cursor-pointer hover:border-border-strong transition-colors"
+                      />
                     </div>
                   </PropertyRow>
 
