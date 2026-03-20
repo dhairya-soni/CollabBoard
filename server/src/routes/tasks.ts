@@ -62,7 +62,6 @@ router.post(
         },
       });
 
-      // Activity log
       await prisma.activityLog.create({
         data: {
           action: 'TASK_CREATED',
@@ -70,7 +69,7 @@ router.post(
           entityId: task.id,
           userId: req.userId!,
           taskId: task.id,
-          metadata: JSON.stringify({ title: task.title }),
+          metadata: JSON.stringify({ title: task.title, projectId, status: task.status, priority: task.priority }),
         },
       });
 
@@ -162,7 +161,7 @@ router.patch(
             entityId: task.id,
             userId: req.userId!,
             taskId: task.id,
-            metadata: JSON.stringify(changes),
+            metadata: JSON.stringify({ title: task.title, projectId: task.projectId, changes }),
           },
         });
       }
@@ -190,6 +189,16 @@ router.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction
     await verifyTaskAccess(task.projectId, req.userId!);
 
     await prisma.task.delete({ where: { id: req.params.id } });
+
+    await prisma.activityLog.create({
+      data: {
+        action: 'TASK_DELETED',
+        entityType: 'TASK',
+        entityId: task.id,
+        userId: req.userId!,
+        metadata: JSON.stringify({ title: task.title, projectId: task.projectId }),
+      },
+    });
 
     broadcastToProject(task.projectId, 'task:deleted', {
       taskId: task.id,

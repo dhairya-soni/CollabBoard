@@ -19,6 +19,7 @@ import {
   X,
   LogOut,
   FolderKanban,
+  BarChart2,
 } from 'lucide-react';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
 import { useProjects } from '@/hooks/useProjects';
@@ -27,11 +28,12 @@ import { useAuthStore } from '@/stores/auth';
 
 /* ── Navigation Items (Linear-style) ── */
 const mainNavItems = [
-  { label: 'Inbox', icon: Inbox, to: '/inbox', count: undefined },
-  { label: 'My Issues', icon: CircleUser, to: '/', count: undefined },
-  { label: 'Projects', icon: FolderKanban, to: '/projects', count: undefined },
-  { label: 'Views', icon: Eye, to: '/views', count: undefined },
-  { label: 'Roadmaps', icon: Map, to: '/roadmaps', count: undefined },
+  { label: 'Inbox',     icon: Inbox,       to: '/inbox',      count: undefined },
+  { label: 'My Issues', icon: CircleUser,  to: '/',           count: undefined },
+  { label: 'Projects',  icon: FolderKanban,to: '/projects',   count: undefined },
+  { label: 'Analytics', icon: BarChart2,   to: '/analytics',  count: undefined },
+  { label: 'Views',     icon: Eye,         to: '/views',      count: undefined },
+  { label: 'Roadmaps',  icon: Map,         to: '/roadmaps',   count: undefined },
 ];
 
 /* ── Sidebar State Persistence ── */

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Menu, Search, SlidersHorizontal, X, Command } from 'lucide-react';
+import { NotificationsDropdown } from '@/components/notifications/NotificationsDropdown';
+import { useCommandPalette } from '@/context/CommandPaletteContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useViewStore } from '@/stores/view';
@@ -22,6 +24,7 @@ export interface HeaderProps {
 
 function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle, taskCount }: HeaderProps) {
   void _sidebarCollapsed;
+  const { toggle: openCmdK } = useCommandPalette();
   const { viewMode, setViewMode } = useViewStore();
   const { status, priority, search, setStatus, setPriority, setSearch, clearFilters } = useFilterStore();
 
@@ -293,14 +296,19 @@ function Header({ sidebarCollapsed: _sidebarCollapsed, onMobileMenuToggle, taskC
             <Search className="h-3.5 w-3.5" />
           </button>
 
-          {/* Notifications */}
+          {/* Cmd+K trigger */}
           <button
-            className="w-7 h-7 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-hover transition-colors relative cursor-pointer"
-            aria-label="Notifications"
+            onClick={openCmdK}
+            className="hidden md:flex items-center gap-1.5 h-[24px] px-2 bg-surface border border-border-strong/50 rounded text-[11px] text-text-muted hover:text-text-tertiary hover:border-border-strong transition-colors cursor-pointer"
+            aria-label="Open command palette"
           >
-            <Bell className="h-3.5 w-3.5" />
-            <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-primary" />
+            <Command className="h-3 w-3" />
+            <span>Jump to…</span>
+            <kbd className="ml-1 text-[10px] font-mono text-text-muted">⌘K</kbd>
           </button>
+
+          {/* Notifications */}
+          <NotificationsDropdown />
         </div>
       </div>
 

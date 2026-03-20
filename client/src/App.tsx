@@ -7,6 +7,7 @@ import DashboardPage from '@/pages/Dashboard';
 import ProjectsPage from '@/pages/Projects';
 import SettingsPage from '@/pages/Settings';
 import WhiteboardPage from '@/pages/WhiteboardPage';
+import AnalyticsPage from '@/pages/AnalyticsPage';
 import { useAuthStore } from '@/stores/auth';
 
 /* ── 404 ── */
@@ -62,6 +63,7 @@ function App() {
           <Route path="/views" element={<PlaceholderPage title="Views" description="Create filtered views to save and share with others." />} />
           <Route path="/roadmaps" element={<PlaceholderPage title="Roadmaps" description="Plan and track your product roadmap." />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Route>

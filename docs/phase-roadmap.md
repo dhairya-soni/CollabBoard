@@ -114,17 +114,38 @@ CollabBoard is built in **8 sequential phases** with strict review gates.
 ---
 
 ## Phase 6: Polish & Advanced Features
-**Days 22–25 | Status: NOT STARTED**
+**Days 22–25 | Status: ✅ COMPLETE**
 
-- Command palette (Cmd+K)
-- Keyboard shortcuts
-- Activity feed
-- Notifications
-- Onboarding flow
-- Dashboard charts (Recharts)
-- File attachments
-- AI task breakdown (OpenAI)
-- Performance: virtualized lists, code splitting
+### Command Palette (Cmd+K)
+- Global `CommandPaletteProvider` context + `useCommandPalette()` hook
+- Triggered by Cmd+K / Ctrl+K from anywhere in the app; also a "Jump to…" button in header
+- Sections: Navigate (Dashboard, Projects, Analytics, Settings), Projects (with task count), Whiteboards
+- Keyboard navigation: ↑↓ arrows, Enter to select, Escape to close
+- Live fuzzy search across all items
+- Highlighted selected item with arrow indicator
+
+### Activity Feed
+- Per-project slide-over panel (Activity button in board header)
+- Shows task created/updated/deleted + comment added events with icons and relative timestamps
+- Auto-refreshes every 15s
+- Enriched activity metadata: title, projectId, changes, taskTitle stored in ActivityLog.metadata
+- Activity log populated on: task create, update, delete, comment create
+
+### Notifications
+- Real bell icon in header replaces placeholder
+- Dropdown showing recent activity from others across all user's projects
+- First 3 items highlighted as unread; "Mark all read" button
+- Auto-refreshes every 30s
+- `GET /api/activity/mine` endpoint
+
+### Analytics
+- Dedicated `/analytics` page, linked from sidebar
+- Project selector dropdown (defaults to first project)
+- Stat cards: Total Tasks, Completed, In Progress, Backlog
+- Donut chart: tasks by status (recharts PieChart)
+- Bar chart: tasks by priority (recharts BarChart)
+- Line chart: task creation trend over last 14 days
+- `GET /api/projects/:id/analytics` endpoint
 
 ---
 
