@@ -41,7 +41,7 @@ router.post(
           entityId: comment.id,
           userId: req.userId!,
           taskId,
-          metadata: JSON.stringify({ preview: content.slice(0, 100) }),
+          metadata: JSON.stringify({ preview: content.slice(0, 100), taskTitle: task.title, projectId: task.projectId }),
         },
       });
 

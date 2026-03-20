@@ -9,8 +9,10 @@ import {
   Loader2,
   Users,
   LayoutGrid,
+  Activity,
 } from 'lucide-react';
 import { ProjectMembersPanel } from '@/components/projects/ProjectMembersPanel';
+import { ActivityFeed } from '@/components/activity/ActivityFeed';
 import type { Project } from '@/types/api';
 import { useTasks, useCreateTask } from '@/hooks/useTasks';
 import { useProjects, useProject } from '@/hooks/useProjects';
@@ -238,6 +240,7 @@ function DashboardPage() {
   // Task detail panel state
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [managingProject, setManagingProject] = useState<Project | null>(null);
+  const [showActivity, setShowActivity] = useState(false);
 
   const handleTaskClick = (task: Task) => {
     setSelectedTaskId(task.id);
@@ -306,6 +309,14 @@ function DashboardPage() {
                 <LayoutGrid className="h-3 w-3" />
                 <span>Whiteboard</span>
               </Link>
+              <button
+                onClick={() => setShowActivity((v) => !v)}
+                className="flex items-center gap-1 h-6 px-2 rounded text-[12px] text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+                title="Activity feed"
+              >
+                <Activity className="h-3 w-3" />
+                <span>Activity</span>
+              </button>
               <PresenceBar users={onlineUsers} />
             </div>
           </div>
@@ -353,6 +364,11 @@ function DashboardPage() {
 
       {/* Task Detail Panel */}
       <TaskDetailPanel taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+
+      {/* Activity Feed */}
+      {showActivity && activeProjectId && (
+        <ActivityFeed projectId={activeProjectId} onClose={() => setShowActivity(false)} />
+      )}
 
       {/* Project Members Panel */}
       {managingProject && (
