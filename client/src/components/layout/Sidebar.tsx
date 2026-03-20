@@ -68,10 +68,11 @@ function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const { data: workspaces } = useWorkspaces();
   const firstWs = workspaces?.[0];
   useEffect(() => {
-    if (firstWs && !currentWorkspaceId) {
+    const isStale = currentWorkspaceId && !workspaces?.find((w) => w.id === currentWorkspaceId);
+    if (firstWs && (!currentWorkspaceId || isStale)) {
       setCurrentWorkspace(firstWs.id);
     }
-  }, [firstWs, currentWorkspaceId, setCurrentWorkspace]);
+  }, [firstWs, currentWorkspaceId, workspaces, setCurrentWorkspace]);
 
   const activeWorkspace = workspaces?.find((w) => w.id === currentWorkspaceId) ?? workspaces?.[0];
 
