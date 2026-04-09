@@ -1,6 +1,6 @@
 # CollabBoard
 
-A real-time collaborative project management app — Kanban boards, infinite canvas whiteboards, activity feeds, and analytics. Built as a full-stack portfolio project.
+A real-time collaborative project management app — Kanban boards, infinite canvas whiteboards, activity feeds, and analytics. Built as a full-stack portfolio project by Dhairya Soni.
 
 ---
 
